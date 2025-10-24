@@ -20,7 +20,11 @@ def main():
 
     dates_re = (r'(?:c(?:a\.?|irca|) ?(?P<circa_date>\d{2,4})|'
                 r'(?P<unqualified_date>\d{2,4}))')
-    dates_df = df['Date'].str.extractall(dates_re)
+    dates_df = df['Date'].str.extractall(dates_re).astype('Int32')
+
+    # TODO: Check with team if this is a good idea
+    dates_df = dates_df.map(lambda x: x + 1900 if x < 100 else x)
+
     dates_df.to_csv(
         file_path.stem + '_dates' + file_path.suffix,
         sep='\t',
