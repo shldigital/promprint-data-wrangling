@@ -18,12 +18,13 @@ def main():
 
     df = df.map(lambda x: x.split(':')[1].rstrip('/').strip())
 
-    circa_re = r'c(?:a\.?|irca|) ?(?P<circa_date>\d{2,4})'
-    circa_dates = df['Date'].str.extract(circa_re)
-    print(circa_dates)
-    circa_dates.to_csv(file_path.stem + '_dates' + file_path.suffix,
-                       sep='\t',
-                       index=False)
+    dates_re = (r'(?:c(?:a\.?|irca|) ?(?P<circa_date>\d{2,4})|'
+                r'(?P<unqualified_date>\d{2,4}))')
+    dates_df = df['Date'].str.extractall(dates_re)
+    dates_df.to_csv(
+        file_path.stem + '_dates' + file_path.suffix,
+        sep='\t',
+    )
 
     df.to_csv(file_path.stem + '_clean' + file_path.suffix,
               sep='\t',
