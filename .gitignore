@@ -11,4 +11,5 @@ wheels/
 
 # Data
 *.tsv
+*.csv
 .~lock.*
