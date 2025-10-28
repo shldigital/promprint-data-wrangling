@@ -71,8 +71,8 @@ def main():
     date_range['max_date'] = processed_dates.max(axis=1)
 
     processed_dates = processed_dates.join(date_range)
-    processed_dates = processed_dates.map(
-        lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
+    # processed_dates = processed_dates.map(
+    #     lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
     processed_dates.to_csv(
         file_path.stem + '_processed_dates' + file_path.suffix,
         sep='\t',
@@ -84,6 +84,14 @@ def main():
     df.to_csv(file_path.stem + '_clean' + file_path.suffix,
               sep='\t',
               index=False)
+
+    register_date = 1863
+    register_df = df.loc[((df['min_date'] - 1) < register_date)
+                         & ((df['max_date'] + 1) > register_date)]
+    register_df.to_csv(file_path.stem + '_filtered_' + str(register_date) +
+                       file_path.suffix,
+                       sep='\t',
+                       index=False)
 
 
 if __name__ == "__main__":
