@@ -20,6 +20,7 @@ def main():
 
     dates_re = (r'(?:c(?:a\.?|irca|) ?(?P<circa_date>\d{2,4})|'
                 r'(?P<unqualified_date>\d{2,4}))')
+    # TODO: Check consistency of table - are there NAs? Why?
     dates_df = df['Date'].str.extractall(dates_re).astype('Int32')
 
     # TODO: Check with team if this is a good idea
