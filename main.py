@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import pandas as pd
 from pathlib import Path
 
@@ -17,31 +18,44 @@ def main():
     df = pd.read_csv(file_path, sep='\t', names=labels)
 
     df = df.map(lambda x: x.split(':')[1].rstrip('/').strip())
+    df_len = len(df)
+    print(f'No of entries: {df_len}')
 
     dates_re = (r'(?:c(?:a\.?|irca|) ?(?P<circa_date>\d{2,4})|'
+                r'(?P<question_date>\d{2,4})\?|'
                 r'(?P<unqualified_date>\d{2,4}))')
     # TODO: Check consistency of table - are there NAs? Why?
-    dates_df = df['Date'].str.extractall(dates_re).astype('Int32')
-
-    circa_dates = dates_df['circa_date']
-    circa_dates.to_csv(
-        file_path.stem + '_circa_dates' + file_path.suffix,
-        sep='\t',
-    )
-    dates_df.drop(columns=['circa_date'])
-
-    max_dates_df = dates_df.groupby(level=0).max()
-    max_unqualified_dates = max_dates_df['unqualified_date']
-
-    min_dates_df = dates_df.groupby(level=0).min()
-    min_unqualified_dates = min_dates_df['unqualified_date']
-
-    print(max_unqualified_dates[23])
-    print(max_unqualified_dates[516])
-    print(min_unqualified_dates[516])
-
+    dates_df = df['Date'].str.extractall(dates_re).astype('float64')
     dates_df.to_csv(
         file_path.stem + '_dates' + file_path.suffix,
+        sep='\t',
+    )
+
+    question_dates = dates_df.pop('question_date').groupby(
+        level=0).first().dropna()
+    n_qd = len(question_dates)
+    print(f'No. of question marked dates: {n_qd}')
+
+    circa_dates = dates_df.pop('circa_date').groupby(level=0).first().dropna()
+    n_cd = len(circa_dates)
+    print(f'No. of circa marked dates: {n_cd}')
+
+    min_uq_dates = dates_df.groupby(level=0).min().rename(
+        columns={'unqualified_date': 'min_uq_date'}).dropna()
+    max_uq_dates = dates_df.groupby(level=0).max().rename(
+        columns={'unqualified_date': 'max_uq_date'}).dropna()
+
+    processed_dates = pd.DataFrame(
+        np.nan,
+        index=range(df_len),
+        columns=['question_date', 'circa_date', 'min_uq_date', 'max_uq_date'])
+    processed_dates.update(question_dates)
+    processed_dates.update(circa_dates)
+    processed_dates.update(min_uq_dates['min_uq_date'])
+    processed_dates.update(max_uq_dates['max_uq_date'])
+
+    processed_dates.to_csv(
+        file_path.stem + '_processed_dates' + file_path.suffix,
         sep='\t',
     )
 
