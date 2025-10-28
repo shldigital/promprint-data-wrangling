@@ -23,16 +23,19 @@ def main():
     # TODO: Check consistency of table - are there NAs? Why?
     dates_df = df['Date'].str.extractall(dates_re).astype('Int32')
 
+    circa_dates = dates_df['circa_date']
+    circa_dates.to_csv(
+        file_path.stem + '_circa_dates' + file_path.suffix,
+        sep='\t',
+    )
+    dates_df.drop(columns=['circa_date'])
+
     max_dates_df = dates_df.groupby(level=0).max()
-    max_circa_dates = max_dates_df['circa_date']
     max_unqualified_dates = max_dates_df['unqualified_date']
 
     min_dates_df = dates_df.groupby(level=0).min()
-    min_circa_dates = min_dates_df['circa_date']
     min_unqualified_dates = min_dates_df['unqualified_date']
 
-    print(max_circa_dates[23])
-    print(min_circa_dates[23])
     print(max_unqualified_dates[23])
     print(max_unqualified_dates[516])
     print(min_unqualified_dates[516])
