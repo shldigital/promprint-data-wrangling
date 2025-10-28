@@ -26,9 +26,9 @@ def main():
     print(f'No of entries: {df_len}')
 
     # Separate out different types of date in case they're relevant
-    dates_re = (r'(?:c(?:a\.?|irca|) ?(?P<circa_date>\d{2,4})|'
-                r'(?P<question_date>\d{2,4})\?|'
-                r'(?P<unqualified_date>\d{2,4}))')
+    dates_re = (r'(?:c(?:a\.?|irca|) ?(?P<circa_date>\d{4})|'
+                r'(?P<question_date>\d{4})\?|'
+                r'(?P<unqualified_date>\d{4}))')
     dates_df = df['Date'].str.extractall(dates_re).astype('float64')
     dates_df.to_csv(
         file_path.stem + '_dates' + file_path.suffix,
@@ -71,6 +71,8 @@ def main():
     date_range['max_date'] = processed_dates.max(axis=1)
 
     processed_dates = processed_dates.join(date_range)
+    processed_dates = processed_dates.map(
+        lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
     processed_dates.to_csv(
         file_path.stem + '_processed_dates' + file_path.suffix,
         sep='\t',
