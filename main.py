@@ -23,9 +23,6 @@ def main():
     # TODO: Check consistency of table - are there NAs? Why?
     dates_df = df['Date'].str.extractall(dates_re).astype('Int32')
 
-    # TODO: Check with team if this is a good idea
-    dates_df = dates_df.map(lambda x: x + 1900 if x < 100 else x)
-
     max_dates_df = dates_df.groupby(level=0).max()
     max_circa_dates = max_dates_df['circa_date']
     max_unqualified_dates = max_dates_df['unqualified_date']
