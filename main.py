@@ -1,39 +1,49 @@
 import argparse
+from functools import partial
+import glob
 import numpy as np
+import operator
+import os
 import pandas as pd
 from pathlib import Path
 
+DEBUG = False
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('filename', help='Input file in tsv format')
-    args = parser.parse_args()
 
-    labels = [
-        'Title', 'Creator', 'Type', 'Publisher', 'Date', 'Language', 'Format',
-        'Relation', 'Rights', 'Identifier', 'Description', 'Subject',
-        'Coverage', 'Contributor', 'Source'
-    ]
-    file_path = Path(args.filename)
-    df = pd.read_csv(file_path, sep='\t', names=labels)
+def first_n_fields(line: list[str], n_fields: int) -> list[str]:
+    return line[:n_fields]
+
+
+def labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
+                  label: str) -> os.PathLike:
+    new_name = file_path.stem + '_' + label + file_path.suffix
+    return out_dir / new_name
+
+
+def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike) -> int:
+    out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     df = df.map(lambda x: x.split(':')[1].rstrip('/').strip())
-    df.to_csv(file_path.stem + '_columnar' + file_path.suffix,
-              sep='\t',
-              index=False)
+    if DEBUG:
+        df.to_csv(labelled_file(out_dir, file_path, 'columnar'),
+                  sep='\t',
+                  index=False)
 
     df_len = len(df)
-    print(f'No of entries: {df_len}')
+    print(f'No. of entries: {df_len}')
 
     # Separate out different types of date in case they're relevant
     dates_re = (r'(?:c(?:a\.?|irca|) ?(?P<circa_date>\d{4})|'
                 r'(?P<question_date>\d{4})\?|'
                 r'(?P<unqualified_date>\d{4}))')
     dates_df = df['Date'].str.extractall(dates_re).astype('float64')
-    dates_df.to_csv(
-        file_path.stem + '_dates' + file_path.suffix,
-        sep='\t',
-    )
+    print(f'No. of missing/unrecognised dates: {df_len - len(dates_df)}')
+    if DEBUG:
+        dates_df.to_csv(
+            labelled_file(out_dir, file_path, 'dates'),
+            sep='\t',
+        )
 
     question_dates = dates_df.pop('question_date').groupby(
         level=0).first().dropna()
@@ -73,26 +83,64 @@ def main():
     processed_dates = processed_dates.join(date_range)
     # processed_dates = processed_dates.map(
     #     lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
-    processed_dates.to_csv(
-        file_path.stem + '_processed_dates' + file_path.suffix,
-        sep='\t',
-    )
+    if DEBUG:
+        processed_dates.to_csv(
+            labelled_file(out_dir, file_path, 'processed_dates'),
+            sep='\t',
+        )
 
     df = pd.concat(
         [df.loc[:, :'Date'], processed_dates, df.loc[:, 'Language':]], axis=1)
 
-    df.to_csv(file_path.stem + '_clean' + file_path.suffix,
+    df.to_csv(labelled_file(out_dir, file_path, 'clean'),
               sep='\t',
               index=False)
 
     register_date = 1863
-    register_df = df.loc[((df['min_date'] - 1) < register_date)
-                         & ((df['max_date'] + 1) > register_date)]
-    register_df.to_csv(file_path.stem + '_filtered_' + str(register_date) +
-                       file_path.suffix,
+    n_exact = len(df.loc[((df['min_date'] - 0.9) < register_date)
+                         & ((df['max_date'] + 0.9) > register_date)])
+    register_df = df.loc[((df['min_date'] - 1.1) < register_date)
+                         & ((df['max_date'] + 1.1) > register_date)]
+    n_extended = len(register_df)
+    print(
+        f"No. of entries filtered for date {register_date} "
+        f"(exact, extended): {n_exact, n_extended}"
+    )
+    register_df.to_csv(labelled_file(out_dir, file_path,
+                                     'filtered_' + str(register_date)),
                        sep='\t',
                        index=False)
+    return n_exact, n_extended
+
+
+def main(folder: str) -> None:
+    labels = [
+        'Title', 'Creator', 'Type', 'Publisher', 'Date', 'Language', 'Format',
+        'Relation', 'Rights', 'Identifier', 'Description', 'Subject',
+        'Coverage', 'Contributor', 'Source'
+    ]
+
+    file_paths = map(Path,
+                     glob.glob(folder + '*.tsv') + glob.glob(folder + '*.txt'))
+    sum_filtered = (0, 0)
+    for file_path in file_paths:
+        print(file_path)
+        df = pd.read_csv(file_path,
+                         sep='\t',
+                         names=labels,
+                         engine='python',
+                         on_bad_lines=partial(first_n_fields, n_fields=15))
+        try:
+            n_filtered = clean_dataframe(df, file_path)
+            sum_filtered = tuple(map(operator.add, sum_filtered, n_filtered))
+        except Exception as e:
+            print(f"Exception while processing {file_path},\n{e}")
+    print(f"No. of entries after filtering (exact, extended): {sum_filtered}")
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('folder', help='Folder of input files in tsv format')
+    args = parser.parse_args()
+
+    main(args.folder)
