@@ -38,7 +38,6 @@ def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike) -> int:
                 r'(?P<question_date>\d{4})\?|'
                 r'(?P<unqualified_date>\d{4}))')
     dates_df = df['Date'].str.extractall(dates_re).astype('float64')
-    print(f'No. of missing/unrecognised dates: {df_len - len(dates_df)}')
     if DEBUG:
         dates_df.to_csv(
             labelled_file(out_dir, file_path, 'dates'),
@@ -83,6 +82,7 @@ def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike) -> int:
     processed_dates = processed_dates.join(date_range)
     # processed_dates = processed_dates.map(
     #     lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
+
     if DEBUG:
         processed_dates.to_csv(
             labelled_file(out_dir, file_path, 'processed_dates'),
@@ -97,19 +97,25 @@ def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike) -> int:
               index=False)
 
     register_date = 1863
-    n_exact = len(df.loc[((df['min_date'] - 0.9) < register_date)
-                         & ((df['max_date'] + 0.9) > register_date)])
     register_df = df.loc[((df['min_date'] - 1.1) < register_date)
                          & ((df['max_date'] + 1.1) > register_date)]
-    n_extended = len(register_df)
-    print(
-        f"No. of entries filtered for date {register_date} "
-        f"(exact, extended): {n_exact, n_extended}"
-    )
     register_df.to_csv(labelled_file(out_dir, file_path,
                                      'filtered_' + str(register_date)),
                        sep='\t',
                        index=False)
+
+    missing_df = df.loc[df['min_date'].isnull()]
+    missing_df.to_csv(labelled_file(out_dir, file_path, 'missing'),
+                      sep='\t',
+                      index=False)
+
+    n_exact = len(df.loc[((df['min_date'] - 0.9) < register_date)
+                         & ((df['max_date'] + 0.9) > register_date)])
+    n_extended = len(register_df)
+    n_missing = len(missing_df)
+    print(f'No. of missing/unrecognised dates: {n_missing}')
+    print(f"No. of entries filtered for date {register_date} "
+          f"(exact, extended): {n_exact, n_extended}")
     return n_exact, n_extended
 
 
