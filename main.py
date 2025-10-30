@@ -9,10 +9,6 @@ from pathlib import Path
 DEBUG = False
 
 
-def first_n_fields(line: list[str], n_fields: int) -> list[str]:
-    return line[:n_fields]
-
-
 def labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
                   label: str) -> os.PathLike:
     new_name = file_path.stem + '_' + label + file_path.suffix
@@ -139,7 +135,7 @@ def main(folder: str) -> None:
                          sep='\t',
                          names=labels,
                          engine='python',
-                         on_bad_lines=partial(first_n_fields, n_fields=15))
+                         on_bad_lines=partial(lambda line: line[:15]))
         try:
             new_register_df, new_missing_df = clean_dataframe(
                 df, file_path, register_date)
