@@ -148,12 +148,16 @@ def main(folder: str) -> None:
         except Exception as e:
             print(f"Exception while processing {file_path},\n{e}")
 
-    register_path = Path(folder).joinpath(
+    register_df.loc[:, ["min_date", "max_date"]] = register_df.loc[:, [
+        "min_date", "max_date"
+    ]].map(lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
+
+    register_path = Path(folder).parent.joinpath(
         folder.rstrip("/") + "_filtered_" + str(register_date) + ".tsv")
-    print(register_path)
     register_df.to_csv(register_path, sep='\t', index=False)
 
-    missing_path = Path(folder).joinpath(folder.rstrip("/") + "_missing.tsv")
+    missing_path = Path(folder).parent.joinpath(
+        folder.rstrip("/") + "_missing.tsv")
     missing_df.to_csv(missing_path, sep='\t', index=False)
 
     print(f"No. of entries after filtering (extended): {len(register_df)}")
