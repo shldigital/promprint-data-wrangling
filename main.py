@@ -2,7 +2,6 @@ import argparse
 from functools import partial
 import glob
 import numpy as np
-import operator
 import os
 import pandas as pd
 from pathlib import Path
@@ -20,7 +19,9 @@ def labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
     return out_dir / new_name
 
 
-def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike) -> int:
+def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike,
+                    register_date: float) -> tuple[pd.DataFrame, pd.DataFrame]:
+
     out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -96,6 +97,7 @@ def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike) -> int:
               sep='\t',
               index=False)
 
+    # TODO: split function here
     register_date = 1863
     register_df = df.loc[((df['min_date'] - 1.1) < register_date)
                          & ((df['max_date'] + 1.1) > register_date)]
@@ -116,7 +118,7 @@ def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike) -> int:
     print(f'No. of missing/unrecognised dates: {n_missing}')
     print(f"No. of entries filtered for date {register_date} "
           f"(exact, extended): {n_exact, n_extended}")
-    return n_exact, n_extended
+    return register_df, missing_df
 
 
 def main(folder: str) -> None:
@@ -128,7 +130,9 @@ def main(folder: str) -> None:
 
     file_paths = map(Path,
                      glob.glob(folder + '*.tsv') + glob.glob(folder + '*.txt'))
-    sum_filtered = (0, 0)
+    register_date = 1863
+    register_df = pd.DataFrame()
+    missing_df = pd.DataFrame()
     for file_path in file_paths:
         print(file_path)
         df = pd.read_csv(file_path,
@@ -137,11 +141,23 @@ def main(folder: str) -> None:
                          engine='python',
                          on_bad_lines=partial(first_n_fields, n_fields=15))
         try:
-            n_filtered = clean_dataframe(df, file_path)
-            sum_filtered = tuple(map(operator.add, sum_filtered, n_filtered))
+            new_register_df, new_missing_df = clean_dataframe(
+                df, file_path, register_date)
+            register_df = pd.concat([register_df, new_register_df])
+            missing_df = pd.concat([missing_df, new_missing_df])
         except Exception as e:
             print(f"Exception while processing {file_path},\n{e}")
-    print(f"No. of entries after filtering (exact, extended): {sum_filtered}")
+
+    register_path = Path(folder).joinpath(
+        folder.rstrip("/") + "_filtered_" + str(register_date) + ".tsv")
+    print(register_path)
+    register_df.to_csv(register_path, sep='\t', index=False)
+
+    missing_path = Path(folder).joinpath(folder.rstrip("/") + "_missing.tsv")
+    missing_df.to_csv(missing_path, sep='\t', index=False)
+
+    print(f"No. of entries after filtering (extended): {len(register_df)}")
+    print(f"No. of entries with no date: {len(missing_df)}")
 
 
 if __name__ == "__main__":
