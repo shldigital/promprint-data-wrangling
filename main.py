@@ -29,8 +29,8 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
                National Library of Scotland
     :param file_path: File path of original data, to name output files with
     :param filter_date: Date in year format (e.g. 1863) to filter, +/- 1 year
-    :return pd.Dataframe: Cleaned entries, filtered down by date
-    :return pd.Dataframe: Cleaned entries that have no interpretable date
+    :return pd.DataFrame: Cleaned entries, filtered down by date
+    :return pd.DataFrame: Cleaned entries that have no interpretable date
     """
 
     out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
@@ -128,7 +128,33 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     print(f'No. of missing/unrecognised dates: {n_missing}')
     print(f"No. of entries filtered for date {filter_date} "
           f"(exact, extended): {n_exact, n_extended}")
-    return register_df, missing_df
+    return register_df.reindex(), missing_df.reindex()
+
+
+def prepare_for_import(df: pd.DataFrame, to_datetime: bool) -> pd.DataFrame:
+    """
+    Insert and rename required columns to match database schema
+    Assumes National Library of Scotland format followed by
+    our own cleaning and date extraction process
+    """
+
+    df_len = len(df)
+    df.columns = df.columns.str.lower()
+    df = df.loc[:, ['title', 'creator', 'min_date', 'max_date']]
+    df = df.rename(columns={'creator': 'author'})
+
+    # Don't need old index info, reset it to match new columns
+    df = df.reset_index(drop=True)
+    df['id'] = pd.Series(np.nan, index=range(df_len))
+    df['source_library'] = pd.Series(['NLS'] * df_len)
+    df['register'] = pd.Series(['1863b'] * df_len)
+    if to_datetime:
+        df.loc[:,
+               ["min_date", "max_date"
+                ]] = df.loc[:, ["min_date", "max_date"]].map(
+                    lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
+
+    return df
 
 
 def main(folder: str) -> None:
@@ -158,20 +184,28 @@ def main(folder: str) -> None:
         except Exception as e:
             print(f"Exception while processing {file_path},\n{e}")
 
-    register_df.loc[:, ["min_date", "max_date"]] = register_df.loc[:, [
-        "min_date", "max_date"
-    ]].map(lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
+    if DEBUG:
+        register_path = Path(folder).parent.joinpath(
+            folder.rstrip("/") + "_filtered_" + str(register_date) + ".tsv")
+        register_df.to_csv(register_path, sep='\t', index=False)
 
-    register_path = Path(folder).parent.joinpath(
-        folder.rstrip("/") + "_filtered_" + str(register_date) + ".tsv")
-    register_df.to_csv(register_path, sep='\t', index=False)
-
-    missing_path = Path(folder).parent.joinpath(
-        folder.rstrip("/") + "_missing.tsv")
-    missing_df.to_csv(missing_path, sep='\t', index=False)
+        missing_path = Path(folder).parent.joinpath(
+            folder.rstrip("/") + "_missing.tsv")
+        missing_df.to_csv(missing_path, sep='\t', index=False)
 
     print(f"No. of entries after filtering (extended): {len(register_df)}")
     print(f"No. of entries with no date: {len(missing_df)}")
+
+    register_df = prepare_for_import(register_df, to_datetime=True)
+    missing_df = prepare_for_import(missing_df, to_datetime=False)
+
+    register_path = Path(folder).parent.joinpath(
+        folder.rstrip("/") + "_filtered_" + str(register_date) + "_db.tsv")
+    register_df.to_csv(register_path, sep='\t', index=False)
+
+    missing_path = Path(folder).parent.joinpath(
+        folder.rstrip("/") + "_missing_db.tsv")
+    missing_df.to_csv(missing_path, sep='\t', index=False)
 
 
 if __name__ == "__main__":
