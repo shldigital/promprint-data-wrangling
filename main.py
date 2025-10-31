@@ -36,7 +36,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    df = df.map(lambda x: x.split(':')[1].rstrip('/').strip())
+    df = df.map(lambda x: ':'.join(x.split(':')[1:]).rstrip('/').strip())
     if DEBUG:
         df.to_csv(_labelled_file(out_dir, file_path, 'columnar'),
                   sep='\t',
