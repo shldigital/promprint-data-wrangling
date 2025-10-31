@@ -14,7 +14,7 @@ def _labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
     """
     Insert a text label into a filename and append to directory
     """
-    new_name = file_path.stem + '_' + label + file_path.suffix
+    new_name = file_path.stem + '_' + label + '.tsv'
     return out_dir / new_name
 
 
