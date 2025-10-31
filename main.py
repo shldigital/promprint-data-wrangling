@@ -9,21 +9,36 @@ from pathlib import Path
 DEBUG = False
 
 
-def labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
-                  label: str) -> os.PathLike:
+def _labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
+                   label: str) -> os.PathLike:
+    """
+    Insert a text label into a filename and append to directory
+    """
     new_name = file_path.stem + '_' + label + file_path.suffix
     return out_dir / new_name
 
 
-def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike,
-                    register_date: float) -> tuple[pd.DataFrame, pd.DataFrame]:
+def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
+                    filter_date: float) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Clean and process the dates of dataset format provided by
+    National Library of Scotland.
+    Saves data to tsv file and to the dataframes that it returns.
+
+    :param df: The uncleaned dataframe in format provided by
+               National Library of Scotland
+    :param file_path: File path of original data, to name output files with
+    :param filter_date: Date in year format (e.g. 1863) to filter, +/- 1 year
+    :return pd.Dataframe: Cleaned entries, filtered down by date
+    :return pd.Dataframe: Cleaned entries that have no interpretable date
+    """
 
     out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     df = df.map(lambda x: x.split(':')[1].rstrip('/').strip())
     if DEBUG:
-        df.to_csv(labelled_file(out_dir, file_path, 'columnar'),
+        df.to_csv(_labelled_file(out_dir, file_path, 'columnar'),
                   sep='\t',
                   index=False)
 
@@ -37,7 +52,7 @@ def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike,
     dates_df = df['Date'].str.extractall(dates_re).astype('float64')
     if DEBUG:
         dates_df.to_csv(
-            labelled_file(out_dir, file_path, 'dates'),
+            _labelled_file(out_dir, file_path, 'dates'),
             sep='\t',
         )
 
@@ -82,37 +97,36 @@ def clean_dataframe(df: pd.DataFrame, file_path: os.PathLike,
 
     if DEBUG:
         processed_dates.to_csv(
-            labelled_file(out_dir, file_path, 'processed_dates'),
+            _labelled_file(out_dir, file_path, 'processed_dates'),
             sep='\t',
         )
 
     df = pd.concat(
         [df.loc[:, :'Date'], processed_dates, df.loc[:, 'Language':]], axis=1)
 
-    df.to_csv(labelled_file(out_dir, file_path, 'clean'),
+    df.to_csv(_labelled_file(out_dir, file_path, 'clean'),
               sep='\t',
               index=False)
 
     # TODO: split function here
-    register_date = 1863
-    register_df = df.loc[((df['min_date'] - 1.1) < register_date)
-                         & ((df['max_date'] + 1.1) > register_date)]
-    register_df.to_csv(labelled_file(out_dir, file_path,
-                                     'filtered_' + str(register_date)),
+    register_df = df.loc[((df['min_date'] - 1.1) < filter_date)
+                         & ((df['max_date'] + 1.1) > filter_date)]
+    register_df.to_csv(_labelled_file(out_dir, file_path,
+                                      'filtered_' + str(filter_date)),
                        sep='\t',
                        index=False)
 
     missing_df = df.loc[df['min_date'].isnull()]
-    missing_df.to_csv(labelled_file(out_dir, file_path, 'missing'),
+    missing_df.to_csv(_labelled_file(out_dir, file_path, 'missing'),
                       sep='\t',
                       index=False)
 
-    n_exact = len(df.loc[((df['min_date'] - 0.9) < register_date)
-                         & ((df['max_date'] + 0.9) > register_date)])
+    n_exact = len(df.loc[((df['min_date'] - 0.9) < filter_date)
+                         & ((df['max_date'] + 0.9) > filter_date)])
     n_extended = len(register_df)
     n_missing = len(missing_df)
     print(f'No. of missing/unrecognised dates: {n_missing}')
-    print(f"No. of entries filtered for date {register_date} "
+    print(f"No. of entries filtered for date {filter_date} "
           f"(exact, extended): {n_exact, n_extended}")
     return register_df, missing_df
 
@@ -137,7 +151,7 @@ def main(folder: str) -> None:
                          engine='python',
                          on_bad_lines=partial(lambda line: line[:15]))
         try:
-            new_register_df, new_missing_df = clean_dataframe(
+            new_register_df, new_missing_df = clean_nls_dates(
                 df, file_path, register_date)
             register_df = pd.concat([register_df, new_register_df])
             missing_df = pd.concat([missing_df, new_missing_df])
