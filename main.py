@@ -216,41 +216,28 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
 
 
 def filter_nls_date(df: pd.DataFrame,
-                    filter_date: int,
-                    file_path: os.PathLike,
-                    debug: bool) -> Tuple[pd.DataFrame, pd.DataFrame]:
+                    filter_date: int | None
+                    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Filter out dates +/- one year from 'filter_date'
 
     :param df: The full dataframe of entries with min and max dates
-    :param file_path: File path of original data, to name debug files
-    :param debug: if True then save the dataframe out as a tsv file
-    :return filtered dataframe and a separate dataframe of undated entries
+    :param filter_date: date to filter, if 'None' then returns undated entries
+    :return filtered dataframe
     """
 
-    register_df = df.loc[((df['min_date'] - 1.1) < filter_date)
-                         & ((df['max_date'] + 1.1) > filter_date)]
-    missing_df = df.loc[df['min_date'].isnull() & df['max_date'].isnull()]
+    if filter_date is not None:
+        register_df = df.loc[((df['min_date'] - 1.1) < filter_date)
+                             & ((df['max_date'] + 1.1) > filter_date)]
+        filter_label = str(filter_date)
+    else:
+        register_df = df.loc[df['min_date'].isnull() & df['max_date'].isnull()]
+        filter_label = "undated"
 
-    if debug:
-        out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
-        out_dir.mkdir(parents=True, exist_ok=True)
-        register_df.to_csv(_labelled_file(out_dir, file_path,
-                                          'filtered_' + str(filter_date)),
-                           sep='\t',
-                           index=False)
-        missing_df.to_csv(_labelled_file(out_dir, file_path, 'missing'),
-                          sep='\t',
-                          index=False)
-
-    n_exact = len(df.loc[((df['min_date'] - 0.9) < filter_date)
-                         & ((df['max_date'] + 0.9) > filter_date)])
     n_extended = len(register_df)
-    n_missing = len(missing_df)
-    logging.info(f'No. of missing/unrecognised dates: {n_missing}')
-    logging.info(f"No. of entries filtered for date {filter_date} "
-                 f"(exact, extended): {n_exact, n_extended}")
-    return register_df.reindex(), missing_df.reindex()
+    logging.info(f"No. of entries filtered for date {filter_label} "
+                 f": {n_extended}")
+    return register_df.reindex()
 
 
 def prepare_for_import(df: pd.DataFrame, to_datetime: bool,
@@ -288,7 +275,7 @@ def main(folder: str, debug: bool) -> None:
 
     file_paths = map(Path,
                      glob.glob(folder + '*.tsv') + glob.glob(folder + '*.txt'))
-    register_date = 1863
+    register_dates = [1863, None]
     compiled_df = pd.DataFrame()
 
     for file_path in file_paths:
@@ -315,34 +302,25 @@ def main(folder: str, debug: bool) -> None:
             folder.rstrip("/") + "_clean.tsv")
         compiled_df.to_csv(clean_path, sep='\t', index=False)
 
-    register_df, missing_df = filter_nls_date(compiled_df,
-                                              register_date,
-                                              file_path,
-                                              debug=debug)
-    if debug:
+    for register_date in register_dates:
+        register_df = filter_nls_date(compiled_df,
+                                      register_date)
+
+        date_label = str(register_date) if register_date is not None else "undated"
+        if debug:
+            register_path = Path(folder).parent.joinpath(
+                folder.rstrip("/") + "_filtered_" + str(date_label) + ".tsv")
+            register_df.to_csv(register_path, sep='\t', index=False)
+
+        print(f"No. of entries after filtering date {date_label}"
+              f": {len(register_df)}")
+        to_datetime = True if register_date is not None else False
+        register_df = prepare_for_import(register_df,
+                                         to_datetime=to_datetime,
+                                         debug=debug)
         register_path = Path(folder).parent.joinpath(
-            folder.rstrip("/") + "_filtered_" + str(register_date) + ".tsv")
+            folder.rstrip("/") + "_filtered_" + date_label + "_db.tsv")
         register_df.to_csv(register_path, sep='\t', index=False)
-
-        missing_path = Path(folder).parent.joinpath(
-            folder.rstrip("/") + "_missing.tsv")
-        missing_df.to_csv(missing_path, sep='\t', index=False)
-
-    print(f"No. of entries after filtering (extended): {len(register_df)}")
-    print(f"No. of entries with no date: {len(missing_df)}")
-
-    register_df = prepare_for_import(register_df,
-                                     to_datetime=True,
-                                     debug=debug)
-    missing_df = prepare_for_import(missing_df, to_datetime=False, debug=debug)
-
-    register_path = Path(folder).parent.joinpath(
-        folder.rstrip("/") + "_filtered_" + str(register_date) + "_db.tsv")
-    register_df.to_csv(register_path, sep='\t', index=False)
-
-    missing_path = Path(folder).parent.joinpath(
-        folder.rstrip("/") + "_missing_db.tsv")
-    missing_df.to_csv(missing_path, sep='\t', index=False)
 
 
 if __name__ == "__main__":
