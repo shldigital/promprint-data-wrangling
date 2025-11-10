@@ -289,8 +289,7 @@ def main(folder: str, debug: bool) -> None:
     file_paths = map(Path,
                      glob.glob(folder + '*.tsv') + glob.glob(folder + '*.txt'))
     register_date = 1863
-    register_df = pd.DataFrame()
-    missing_df = pd.DataFrame()
+    compiled_df = pd.DataFrame()
 
     for file_path in file_paths:
         print(f"Processing: {file_path}")
@@ -301,20 +300,25 @@ def main(folder: str, debug: bool) -> None:
         df = (df.pipe(columnise_nls_data,
                       file_path=file_path,
                       debug=debug)
-                .pipe(clean_nls_titles,
-                      file_path=file_path,
-                      debug=debug)
-                .pipe(clean_nls_dates,
-                      file_path=file_path,
-                      debug=debug))
+              .pipe(clean_nls_titles,
+                    file_path=file_path,
+                    debug=debug)
+              .pipe(clean_nls_dates,
+                    file_path=file_path,
+                    debug=debug))
+        compiled_df = pd.concat([compiled_df, df])
 
-        new_register_df, new_missing_df = filter_nls_date(df,
-                                                          register_date,
-                                                          file_path,
-                                                          debug=debug)
-        register_df = pd.concat([register_df, new_register_df])
-        missing_df = pd.concat([missing_df, new_missing_df])
+    print(f"Total No. of entries: {len(compiled_df)}")
 
+    if debug:
+        clean_path = Path(folder).parent.joinpath(
+            folder.rstrip("/") + "_clean.tsv")
+        compiled_df.to_csv(clean_path, sep='\t', index=False)
+
+    register_df, missing_df = filter_nls_date(compiled_df,
+                                              register_date,
+                                              file_path,
+                                              debug=debug)
     if debug:
         register_path = Path(folder).parent.joinpath(
             folder.rstrip("/") + "_filtered_" + str(register_date) + ".tsv")
