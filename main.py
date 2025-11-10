@@ -53,6 +53,13 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
         df.to_csv(_labelled_file(out_dir, file_path, 'columnar'),
                   sep='\t',
                   index=False)
+    labels = [
+        'Title', 'Creator', 'Type', 'Publisher', 'Date', 'Language', 'Format',
+        'Relation', 'Rights', 'Identifier', 'Description', 'Subject',
+        'Coverage', 'Contributor', 'Source'
+    ]
+
+    df.columns = labels
 
     df_len = len(df)
     print(f'No. of entries: {df_len}')
@@ -168,11 +175,6 @@ def prepare_for_import(df: pd.DataFrame, to_datetime: bool) -> pd.DataFrame:
 
 
 def main(folder: str) -> None:
-    labels = [
-        'Title', 'Creator', 'Type', 'Publisher', 'Date', 'Language', 'Format',
-        'Relation', 'Rights', 'Identifier', 'Description', 'Subject',
-        'Coverage', 'Contributor', 'Source'
-    ]
 
     file_paths = map(Path,
                      glob.glob(folder + '*.tsv') + glob.glob(folder + '*.txt'))
@@ -183,7 +185,6 @@ def main(folder: str) -> None:
         print(file_path)
         df = pd.read_csv(file_path,
                          sep='\t',
-                         names=labels,
                          engine='python',
                          on_bad_lines=partial(lambda line: line[:15]))
         try:
