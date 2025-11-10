@@ -278,8 +278,11 @@ def main(folder: str, debug: bool) -> None:
     register_dates = [1863, None]
     compiled_df = pd.DataFrame()
 
+    # N.B. We're doing cleaning per file so that a human can inspect
+    # debug output easier (per file instead of the entire compilation)
     for file_path in file_paths:
         print(f"Processing: {file_path}")
+        # `on_bad_lines` deals with the errant tabs at end of nls data files
         df = pd.read_csv(file_path,
                          sep='\t',
                          engine='python',
