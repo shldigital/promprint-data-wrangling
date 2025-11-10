@@ -1,10 +1,21 @@
 import argparse
 from functools import partial
 import glob
+import logging
 import numpy as np
 import os
 import pandas as pd
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO,
+                    filename="promprint-cleaning.log",
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    filemode='w')
+
+console = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+console.setFormatter(formatter)
 
 
 def _labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
@@ -61,7 +72,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     df.columns = labels
 
     df_len = len(df)
-    print(f'No. of entries: {df_len}')
+    logging.info(f'No. of entries: {df_len}')
 
     # Separate out different types of date in case they're relevant
     dates_re = (r'(?:c(?:a\.?|irca|) ?(?P<circa_date>\d{4})|'
@@ -77,11 +88,11 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     question_dates = dates_df.pop('question_date').groupby(
         level=0).first().dropna()
     n_qd = len(question_dates)
-    print(f'No. of question marked dates: {n_qd}')
+    logging.info(f'No. of question marked dates: {n_qd}')
 
     circa_dates = dates_df.pop('circa_date').groupby(level=0).first().dropna()
     n_cd = len(circa_dates)
-    print(f'No. of circa marked dates: {n_cd}')
+    logging.info(f'No. of circa marked dates: {n_cd}')
 
     min_uq_dates = dates_df.groupby(level=0).min().rename(
         columns={
@@ -143,9 +154,9 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
                          & ((df['max_date'] + 0.9) > filter_date)])
     n_extended = len(register_df)
     n_missing = len(missing_df)
-    print(f'No. of missing/unrecognised dates: {n_missing}')
-    print(f"No. of entries filtered for date {filter_date} "
-          f"(exact, extended): {n_exact, n_extended}")
+    logging.info(f'No. of missing/unrecognised dates: {n_missing}')
+    logging.info(f"No. of entries filtered for date {filter_date} "
+                 f"(exact, extended): {n_exact, n_extended}")
     return register_df.reindex(), missing_df.reindex()
 
 
@@ -182,18 +193,20 @@ def main(folder: str, debug: bool) -> None:
     register_df = pd.DataFrame()
     missing_df = pd.DataFrame()
     for file_path in file_paths:
-        print(file_path)
+        print(f"Processing: {file_path}")
         df = pd.read_csv(file_path,
                          sep='\t',
                          engine='python',
                          on_bad_lines=partial(lambda line: line[:15]))
         try:
-            new_register_df, new_missing_df = clean_nls_dates(
-                df, file_path, register_date, debug=debug)
+            new_register_df, new_missing_df = clean_nls_dates(df,
+                                                              file_path,
+                                                              register_date,
+                                                              debug=debug)
             register_df = pd.concat([register_df, new_register_df])
             missing_df = pd.concat([missing_df, new_missing_df])
         except Exception as e:
-            print(f"Exception while processing {file_path},\n{e}")
+            logging.error(f"Exception while processing {file_path},\n{e}")
 
     if debug:
         register_path = Path(folder).parent.joinpath(
@@ -226,8 +239,14 @@ if __name__ == "__main__":
     parser.add_argument('folder', help='Folder of input files in tsv format')
     parser.add_argument('--debug',
                         action='store_true',
-                        help='Print debug messages')
+                        help='Save intermediate stages of cleaning to file')
 
     args = parser.parse_args()
+
+    if args.debug:
+        console.setLevel(logging.INFO)
+    else:
+        console.setLevel(logging.WARNING)
+    logging.getLogger('').addHandler(console)
 
     main(args.folder, args.debug)
