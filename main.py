@@ -58,18 +58,18 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    # Strip out the data key, but leave other colons found in value
     df = df.map(lambda x: ':'.join(x.split(':')[1:]).rstrip('/').strip())
-    if debug:
-        df.to_csv(_labelled_file(out_dir, file_path, 'columnar'),
-                  sep='\t',
-                  index=False)
     labels = [
         'Title', 'Creator', 'Type', 'Publisher', 'Date', 'Language', 'Format',
         'Relation', 'Rights', 'Identifier', 'Description', 'Subject',
         'Coverage', 'Contributor', 'Source'
     ]
-
     df.columns = labels
+    if debug:
+        df.to_csv(_labelled_file(out_dir, file_path, 'columnar'),
+                  sep='\t',
+                  index=False)
 
     df_len = len(df)
     logging.info(f'No. of entries: {df_len}')
