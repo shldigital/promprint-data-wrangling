@@ -298,25 +298,22 @@ def main(folder: str, debug: bool) -> None:
                          sep='\t',
                          engine='python',
                          on_bad_lines=partial(lambda line: line[:15]))
-        try:
-            df = (df.pipe(columnise_nls_data,
-                          file_path=file_path,
-                          debug=debug)
-                  .pipe(clean_nls_titles,
-                        file_path=file_path,
-                        debug=debug)
-                  .pipe(clean_nls_dates,
-                        file_path=file_path,
-                        debug=debug))
+        df = (df.pipe(columnise_nls_data,
+                      file_path=file_path,
+                      debug=debug)
+                .pipe(clean_nls_titles,
+                      file_path=file_path,
+                      debug=debug)
+                .pipe(clean_nls_dates,
+                      file_path=file_path,
+                      debug=debug))
 
-            new_register_df, new_missing_df = filter_nls_date(df,
-                                                              register_date,
-                                                              file_path,
-                                                              debug=debug)
-            register_df = pd.concat([register_df, new_register_df])
-            missing_df = pd.concat([missing_df, new_missing_df])
-        except Exception as e:
-            logging.error(f"Exception while processing {file_path},\n{e}")
+        new_register_df, new_missing_df = filter_nls_date(df,
+                                                          register_date,
+                                                          file_path,
+                                                          debug=debug)
+        register_df = pd.concat([register_df, new_register_df])
+        missing_df = pd.concat([missing_df, new_missing_df])
 
     if debug:
         register_path = Path(folder).parent.joinpath(
