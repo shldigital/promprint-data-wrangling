@@ -21,9 +21,21 @@ def _labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
 def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
                     filter_date: float) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Clean and process the dates of dataset format provided by
-    National Library of Scotland.
-    Saves data to tsv file and to the dataframes that it returns.
+    Clean and process the dates of the dataset format provided by
+    National Library of Scotland. This is 'dictionary' style format, with tab
+    separated sets of key-value pairs for each entry. Each entry is then
+    separated by new lines, e.g.
+
+    Title: {first entry title}<tab>Creator: {entry creator}<tab>...<newline>
+    Title: {second entry title}<tab>Creator: {second entry creator}<tab>...<newline>
+
+    Saves data to tsv file in columnar format (one column per key) e.g.
+
+    Title<tab>Creator<tab>...
+    {first entry title}<tab>{second entry creator}<tab>...<newline>
+    {second entry title}<tab>{second entry creator}<tab>...<newline>
+
+    and also returns the formatted dataframe.
 
     :param df: The uncleaned dataframe in format provided by
                National Library of Scotland
@@ -133,9 +145,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
 
 def prepare_for_import(df: pd.DataFrame, to_datetime: bool) -> pd.DataFrame:
     """
-    Insert and rename required columns to match database schema
-    Assumes National Library of Scotland format followed by
-    our own cleaning and date extraction process
+    Insert and rename required columns to match promprint database schema
     """
 
     df_len = len(df)
