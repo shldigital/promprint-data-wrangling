@@ -6,8 +6,6 @@ import os
 import pandas as pd
 from pathlib import Path
 
-DEBUG = False
-
 
 def _labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
                    label: str) -> os.PathLike:
@@ -19,7 +17,8 @@ def _labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
 
 
 def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
-                    filter_date: float) -> tuple[pd.DataFrame, pd.DataFrame]:
+                    filter_date: float,
+                    debug: bool) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Clean and process the dates of the dataset format provided by
     National Library of Scotland. This is 'dictionary' style format, with tab
@@ -49,7 +48,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     out_dir.mkdir(parents=True, exist_ok=True)
 
     df = df.map(lambda x: ':'.join(x.split(':')[1:]).rstrip('/').strip())
-    if DEBUG:
+    if debug:
         df.to_csv(_labelled_file(out_dir, file_path, 'columnar'),
                   sep='\t',
                   index=False)
@@ -69,7 +68,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
                 r'(?P<question_date>\d{4})\?|'
                 r'(?P<unqualified_date>\d{4}))')
     dates_df = df['Date'].str.extractall(dates_re).astype('float64')
-    if DEBUG:
+    if debug:
         dates_df.to_csv(
             _labelled_file(out_dir, file_path, 'dates'),
             sep='\t',
@@ -114,7 +113,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     # processed_dates = processed_dates.map(
     #     lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
 
-    if DEBUG:
+    if debug:
         processed_dates.to_csv(
             _labelled_file(out_dir, file_path, 'processed_dates'),
             sep='\t',
@@ -150,7 +149,8 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     return register_df.reindex(), missing_df.reindex()
 
 
-def prepare_for_import(df: pd.DataFrame, to_datetime: bool) -> pd.DataFrame:
+def prepare_for_import(df: pd.DataFrame, to_datetime: bool,
+                       debug: bool) -> pd.DataFrame:
     """
     Insert and rename required columns to match promprint database schema
     """
@@ -174,7 +174,7 @@ def prepare_for_import(df: pd.DataFrame, to_datetime: bool) -> pd.DataFrame:
     return df
 
 
-def main(folder: str) -> None:
+def main(folder: str, debug: bool) -> None:
 
     file_paths = map(Path,
                      glob.glob(folder + '*.tsv') + glob.glob(folder + '*.txt'))
@@ -189,13 +189,13 @@ def main(folder: str) -> None:
                          on_bad_lines=partial(lambda line: line[:15]))
         try:
             new_register_df, new_missing_df = clean_nls_dates(
-                df, file_path, register_date)
+                df, file_path, register_date, debug=debug)
             register_df = pd.concat([register_df, new_register_df])
             missing_df = pd.concat([missing_df, new_missing_df])
         except Exception as e:
             print(f"Exception while processing {file_path},\n{e}")
 
-    if DEBUG:
+    if debug:
         register_path = Path(folder).parent.joinpath(
             folder.rstrip("/") + "_filtered_" + str(register_date) + ".tsv")
         register_df.to_csv(register_path, sep='\t', index=False)
@@ -207,8 +207,10 @@ def main(folder: str) -> None:
     print(f"No. of entries after filtering (extended): {len(register_df)}")
     print(f"No. of entries with no date: {len(missing_df)}")
 
-    register_df = prepare_for_import(register_df, to_datetime=True)
-    missing_df = prepare_for_import(missing_df, to_datetime=False)
+    register_df = prepare_for_import(register_df,
+                                     to_datetime=True,
+                                     debug=debug)
+    missing_df = prepare_for_import(missing_df, to_datetime=False, debug=debug)
 
     register_path = Path(folder).parent.joinpath(
         folder.rstrip("/") + "_filtered_" + str(register_date) + "_db.tsv")
@@ -222,6 +224,10 @@ def main(folder: str) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('folder', help='Folder of input files in tsv format')
+    parser.add_argument('--debug',
+                        action='store_true',
+                        help='Print debug messages')
+
     args = parser.parse_args()
 
-    main(args.folder)
+    main(args.folder, args.debug)
