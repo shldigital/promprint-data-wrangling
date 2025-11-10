@@ -257,14 +257,20 @@ def prepare_for_import(df: pd.DataFrame, to_datetime: bool,
                        debug: bool) -> pd.DataFrame:
     """
     Insert and rename required columns to match promprint database schema
+
+    :param df: The dataframe to prepare
+    :param to_datetime: whether or not we should try to convert dates in float
+    format to datetime format (false for undated data)
+    :param debug: debug flag not used right now
+    :return prepped dataframe
     """
 
     df_len = len(df)
     df.columns = df.columns.str.lower()
-    df = df.loc[:, ['title', 'creator', 'min_date', 'max_date']]
+    df = df.loc[:, ['title', 'clean_title', 'creator', 'min_date', 'max_date']]
     df = df.rename(columns={'creator': 'author'})
 
-    # Don't need old index info, reset it to match new columns
+    # Don't need original index info, reset it to match new columns
     df = df.reset_index(drop=True)
     df['id'] = pd.Series(np.nan, index=range(df_len))
     df['source_library'] = pd.Series(['NLS'] * df_len)
