@@ -2,13 +2,12 @@ import argparse
 import glob
 import logging
 import numpy as np
-import os
 import pandas as pd
 import re
 
 from functools import partial
-from pathlib import Path
-from typing import List, Tuple
+from pathlib import Path, PosixPath
+from typing import List
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,
@@ -21,8 +20,8 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console.setFormatter(formatter)
 
 
-def _labelled_file(out_dir: os.PathLike, file_path: os.PathLike,
-                   label: str) -> os.PathLike:
+def _labelled_file(out_dir: PosixPath, file_path: PosixPath,
+                   label: str) -> PosixPath:
     """
     Insert a text label into a filename and append to directory
     """
@@ -53,7 +52,7 @@ def _clean_title_string(title_string: str) -> str:
     return single_spaced.strip().lower()
 
 
-def columnise_nls_data(df: pd.DataFrame, file_path: os.PathLike,
+def columnise_nls_data(df: pd.DataFrame, file_path: PosixPath,
                        debug: bool) -> pd.DataFrame:
     """
     Reformat data provided by National Library of Scotland.
@@ -91,7 +90,7 @@ def columnise_nls_data(df: pd.DataFrame, file_path: os.PathLike,
     return df
 
 
-def clean_nls_titles(df: pd.DataFrame, file_path: os.PathLike,
+def clean_nls_titles(df: pd.DataFrame, file_path: PosixPath,
                      debug: bool) -> pd.DataFrame:
     """
     Collecting the different title cleaning functions here
@@ -112,8 +111,8 @@ def clean_nls_titles(df: pd.DataFrame, file_path: os.PathLike,
     return df
 
 
-def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
-                    debug: bool) -> tuple[pd.DataFrame, pd.DataFrame]:
+def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
+                    debug: bool) -> pd.DataFrame:
     """
     Clean the dates of the National Library of Scotland dataset.
     The dates have multiple annotations e,g, c1983, circa 1983 etc.
@@ -191,8 +190,8 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     date_range['min_date'] = processed_dates.min(axis=1)
     date_range['max_date'] = processed_dates.max(axis=1)
 
-    df = pd.concat(
-        [df.loc[:, :'Date'], date_range, df.loc[:, 'Language':]], axis=1)
+    df = pd.concat(  # type: ignore[call-overload]
+        [df.loc[:, :'Date'], date_range, df.loc[:, 'Language':]], axis=1)  # type: ignore[misc]
 
     logging.info(f'No. of entries: {df_len}')
     logging.info(f'No. of question marked dates: {n_qd}')
@@ -214,9 +213,9 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
 def filter_nls_date(df: pd.DataFrame,
                     filter_date: int | None,
                     date_range: float,
-                    folder: os.PathLike,
+                    folder: str,
                     debug: bool
-                    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+                    ) -> pd.DataFrame:
     """
     Filter out dates within a range of years from 'filter_date'
     N.B. pandas' 'to_datetime()' can't deal with dates before 1678(!)
@@ -252,7 +251,7 @@ def filter_nls_date(df: pd.DataFrame,
 
 
 def prepare_for_import(df: pd.DataFrame,
-                       keep_columns: List[str],
+                       drop_columns: List[str] | None,
                        source_library: str,
                        register_name: str) -> pd.DataFrame:
     """
@@ -266,7 +265,7 @@ def prepare_for_import(df: pd.DataFrame,
         TRINITY_LIBRARY = "TCD"
 
     :param df: The dataframe to prepare
-    :param keep_columns: Which columns to preserve (all others are discarded)
+    :param drop_columns: Which columns to drop before export
     :param source_library: The 3-letter library code for source library
     :param register_name: Name of register to which these entries are relevant
     :return df.DataFrame: Exportable dataframe
@@ -274,7 +273,8 @@ def prepare_for_import(df: pd.DataFrame,
 
     df_len = len(df)
     df.columns = df.columns.str.lower()
-    df = df.loc[:, keep_columns]
+    if drop_columns is not None:
+        df = df.drop(columns=drop_columns)
     df = df.rename(columns={'creator': 'author'})
 
     # Don't need original index info, reset it to match new columns
@@ -307,12 +307,13 @@ def main(folder: str, debug: bool) -> None:
     # debug output easier (per file instead of the entire compilation)
     for file_path in file_paths:
         print(f"Processing: {file_path}")
+        print(type(file_path))
         # `on_bad_lines` deals with the errant tabs at end of nls data files
         df = pd.read_csv(file_path,
                          sep='\t',
                          engine='python',
                          on_bad_lines=partial(lambda line: line[:15]))
-        df = (df.pipe(columnise_nls_data,
+        df = (df.pipe(columnise_nls_data,  # type: ignore[call-overload]
                       file_path=file_path,
                       debug=debug)
               .pipe(clean_nls_titles,
@@ -340,11 +341,9 @@ def main(folder: str, debug: bool) -> None:
         print(f"No. of entries after filtering for register {register_name}"
               f": {len(register_df)}")
 
-        keep_columns = ['title', 'clean_title', 'creator',
-                        'min_date', 'max_date']
         source_library = 'NLS'
         register_df = prepare_for_import(register_df,
-                                         keep_columns,
+                                         None,
                                          source_library,
                                          register_name)
         register_path = Path(folder).parent.joinpath(
