@@ -200,7 +200,6 @@ def prepare_for_import(df: pd.DataFrame,
     df.columns = df.columns.str.lower()
     if drop_columns is not None:
         df = df.drop(columns=drop_columns)
-    df = df.rename(columns={'creator': 'author'})
 
     # Don't need original index info, reset it to match new columns
     df = df.reset_index(drop=True)
