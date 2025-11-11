@@ -46,10 +46,14 @@ def clean_titles(df: pd.DataFrame, file_path: PosixPath,
     :param debug: if True then save the dataframe out as a tsv file
     :return pd.DataFrame: The columnar dataframe
     """
-    df['clean_title'] = (
+    clean_titles = (
         df['Title'].map(remove_metadata)
         .map(clean_title_string)
+        .rename('clean_title')
     )
+
+    df = pd.concat(
+        [df.loc[:, :'Title'], clean_titles, df.loc[:, 'Creator':]], axis=1)
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
