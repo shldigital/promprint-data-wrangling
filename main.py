@@ -192,8 +192,6 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     date_range['max_date'] = processed_dates.max(axis=1)
 
     processed_dates = processed_dates.join(date_range)
-    # processed_dates = processed_dates.map(
-    #     lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
 
     df = pd.concat(
         [df.loc[:, :'Date'], processed_dates, df.loc[:, 'Language':]], axis=1)
@@ -288,10 +286,13 @@ def prepare_for_import(df: pd.DataFrame,
     df['source_library'] = pd.Series([source_library] * df_len)
     df['register'] = pd.Series([register_name] * df_len)
     if register_name != "undated":
+        df[["min_date", "max_date"]] = df[["min_date", "max_date"]].astype(object)
         df.loc[:,
                ["min_date", "max_date"
                 ]] = df.loc[:, ["min_date", "max_date"]].map(
                     lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
+        df[["min_date", "max_date"]] = df[["min_date", "max_date"]].astype(
+           'datetime64[ns]')
 
     return df
 
