@@ -8,7 +8,7 @@ import re
 
 from functools import partial
 from pathlib import Path
-from typing import Tuple
+from typing import List, Tuple
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,
@@ -216,53 +216,74 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
 
 
 def filter_nls_date(df: pd.DataFrame,
-                    filter_date: int | None
+                    filter_date: int | None,
+                    date_range: float,
+                    folder: os.PathLike,
+                    debug: bool
                     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Filter out dates +/- one year from 'filter_date'
+    Filter out dates within a range of years from 'filter_date'
 
     :param df: The full dataframe of entries with min and max dates
     :param filter_date: date to filter, if 'None' then returns undated entries
+    :param date_range: include dates +/- this value in years
+    :param folder: folder to put filtered dataframe into for debug
+    :param debug: if True save output to 'folder' as tsv
     :return filtered dataframe
     """
 
+    mod_year = date_range + 0.1  # Add 0.1 to escape rounding errors
     if filter_date is not None:
-        register_df = df.loc[((df['min_date'] - 1.1) < filter_date)
-                             & ((df['max_date'] + 1.1) > filter_date)]
+        register_df = df.loc[((df['min_date'] - mod_year) < filter_date)
+                             & ((df['max_date'] + mod_year) > filter_date)]
         filter_label = str(filter_date)
     else:
         register_df = df.loc[df['min_date'].isnull() & df['max_date'].isnull()]
         filter_label = "undated"
 
-    n_extended = len(register_df)
+    if debug:
+        register_path = Path(folder).parent.joinpath(
+            folder.rstrip("/") + "_filtered_" + str(filter_label) + ".tsv")
+        register_df.to_csv(register_path, sep='\t', index=False)
+
     logging.info(f"No. of entries filtered for date {filter_label} "
-                 f": {n_extended}")
+                 f": {len(register_df)}")
     return register_df.reindex()
 
 
-def prepare_for_import(df: pd.DataFrame, to_datetime: bool,
-                       debug: bool) -> pd.DataFrame:
+def prepare_for_import(df: pd.DataFrame,
+                       keep_columns: List[str],
+                       source_library: str,
+                       register_name: str) -> pd.DataFrame:
     """
     Insert and rename required columns to match promprint database schema
 
+    Library codes:
+        BODLEIAN_LIBRARY = "BDL"
+        BRITISH_LIBRARY = "BTL"
+        CAMBRIDGE_LIBRARY = "CAL"
+        SCOTLAND_LIBRARY = "NLS"
+        TRINITY_LIBRARY = "TCD"
+
     :param df: The dataframe to prepare
-    :param to_datetime: whether or not we should try to convert dates in float
-    format to datetime format (false for undated data)
-    :param debug: debug flag not used right now
-    :return prepped dataframe
+    :param keep_columns: Which columns to preserve (all others are discarded)
+    :param source_library: The 3-letter library code for source library
+    :param register_name: Name of register to which these entries are relevant
+    :return df.DataFrame: Exportable dataframe
     """
 
     df_len = len(df)
     df.columns = df.columns.str.lower()
-    df = df.loc[:, ['title', 'clean_title', 'creator', 'min_date', 'max_date']]
+    df = df.loc[:, keep_columns]
     df = df.rename(columns={'creator': 'author'})
 
     # Don't need original index info, reset it to match new columns
     df = df.reset_index(drop=True)
+    # Empty 'id' column required for django import for now
     df['id'] = pd.Series(np.nan, index=range(df_len))
-    df['source_library'] = pd.Series(['NLS'] * df_len)
-    df['register'] = pd.Series(['1863b'] * df_len)
-    if to_datetime:
+    df['source_library'] = pd.Series([source_library] * df_len)
+    df['register'] = pd.Series([register_name] * df_len)
+    if register_name != "undated":
         df.loc[:,
                ["min_date", "max_date"
                 ]] = df.loc[:, ["min_date", "max_date"]].map(
@@ -275,7 +296,8 @@ def main(folder: str, debug: bool) -> None:
 
     file_paths = map(Path,
                      glob.glob(folder + '*.tsv') + glob.glob(folder + '*.txt'))
-    register_dates = [1863, None]
+    registers = {"1863b": 1863, "undated": None}
+    date_range = 1.
     compiled_df = pd.DataFrame()
 
     # N.B. We're doing cleaning per file so that a human can inspect
@@ -305,24 +327,25 @@ def main(folder: str, debug: bool) -> None:
             folder.rstrip("/") + "_clean.tsv")
         compiled_df.to_csv(clean_path, sep='\t', index=False)
 
-    for register_date in register_dates:
+    for register_name, register_date in registers.items():
         register_df = filter_nls_date(compiled_df,
-                                      register_date)
+                                      register_date,
+                                      date_range,
+                                      folder,
+                                      debug=debug)
 
-        date_label = str(register_date) if register_date is not None else "undated"
-        if debug:
-            register_path = Path(folder).parent.joinpath(
-                folder.rstrip("/") + "_filtered_" + str(date_label) + ".tsv")
-            register_df.to_csv(register_path, sep='\t', index=False)
-
-        print(f"No. of entries after filtering date {date_label}"
+        print(f"No. of entries after filtering for register {register_name}"
               f": {len(register_df)}")
-        to_datetime = True if register_date is not None else False
+
+        keep_columns = ['title', 'clean_title', 'creator',
+                        'min_date', 'max_date']
+        source_library = 'NLS'
         register_df = prepare_for_import(register_df,
-                                         to_datetime=to_datetime,
-                                         debug=debug)
+                                         keep_columns,
+                                         source_library,
+                                         register_name)
         register_path = Path(folder).parent.joinpath(
-            folder.rstrip("/") + "_filtered_" + date_label + "_db.tsv")
+            folder.rstrip("/") + "_filtered_" + register_name + "_db.tsv")
         register_df.to_csv(register_path, sep='\t', index=False)
 
 
