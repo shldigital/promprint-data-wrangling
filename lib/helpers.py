@@ -1,3 +1,4 @@
+import pandas as pd
 import re
 
 from pathlib import PosixPath
@@ -35,3 +36,24 @@ def clean_title_string(title_string: str) -> str:
     return single_spaced.strip().lower()
 
 
+def clean_titles(df: pd.DataFrame, file_path: PosixPath,
+                 debug: bool) -> pd.DataFrame:
+    """
+    Collecting the different title cleaning functions here
+
+    :param df: The dataframe with uncleaned titles in columnar format
+    :param file_path: File path of original data, to name debug output files
+    :param debug: if True then save the dataframe out as a tsv file
+    :return pd.DataFrame: The columnar dataframe
+    """
+    df['clean_title'] = (
+        df['Title'].map(remove_metadata)
+        .map(clean_title_string)
+    )
+    if debug:
+        out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        df.to_csv(labelled_file(out_dir, file_path, 'clean_titles'),
+                  sep='\t',
+                  index=False)
+    return df
