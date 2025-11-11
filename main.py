@@ -191,10 +191,8 @@ def clean_nls_dates(df: pd.DataFrame, file_path: os.PathLike,
     date_range['min_date'] = processed_dates.min(axis=1)
     date_range['max_date'] = processed_dates.max(axis=1)
 
-    processed_dates = processed_dates.join(date_range)
-
     df = pd.concat(
-        [df.loc[:, :'Date'], processed_dates, df.loc[:, 'Language':]], axis=1)
+        [df.loc[:, :'Date'], date_range, df.loc[:, 'Language':]], axis=1)
 
     logging.info(f'No. of entries: {df_len}')
     logging.info(f'No. of question marked dates: {n_qd}')
