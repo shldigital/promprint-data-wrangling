@@ -223,6 +223,8 @@ def filter_nls_date(df: pd.DataFrame,
                     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Filter out dates within a range of years from 'filter_date'
+    N.B. pandas' 'to_datetime()' can't deal with dates before 1678(!)
+    so we're forcing all dates before then to 1678.
 
     :param df: The full dataframe of entries with min and max dates
     :param filter_date: date to filter, if 'None' then returns undated entries
@@ -234,12 +236,14 @@ def filter_nls_date(df: pd.DataFrame,
 
     mod_year = date_range + 0.1  # Add 0.1 to escape rounding errors
     if filter_date is not None:
+        filter_label = str(filter_date)
         register_df = df.loc[((df['min_date'] - mod_year) < filter_date)
                              & ((df['max_date'] + mod_year) > filter_date)]
-        filter_label = str(filter_date)
+        register_df['min_date'] = register_df['min_date'].map(
+            lambda d: 1678. if d < 1678. else d)
     else:
-        register_df = df.loc[df['min_date'].isnull() & df['max_date'].isnull()]
         filter_label = "undated"
+        register_df = df.loc[df['min_date'].isnull() & df['max_date'].isnull()]
 
     if debug:
         register_path = Path(folder).parent.joinpath(
