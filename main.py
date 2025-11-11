@@ -239,7 +239,7 @@ def filter_nls_date(df: pd.DataFrame,
         filter_label = str(filter_date)
         register_df = df.loc[((df['min_date'] - mod_year) < filter_date)
                              & ((df['max_date'] + mod_year) > filter_date)]
-        register_df['min_date'] = register_df['min_date'].map(
+        register_df.loc[:, 'min_date'] = register_df.loc[:, 'min_date'].map(
             lambda d: 1678. if d < 1678. else d)
     else:
         filter_label = "undated"
