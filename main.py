@@ -69,10 +69,10 @@ def main(folder: str, debug: bool) -> None:
               f": {len(register_df)}")
 
         source_library = 'NLS'
-        register_df = nls.prepare_for_import(register_df,
-                                             None,
-                                             source_library,
-                                             register_name)
+        register_df = helpers.format_library_set(register_df,
+                                                 None,
+                                                 source_library,
+                                                 register_name)
         register_path = Path(folder).parent.joinpath(
             folder.rstrip("/") + "_filtered_" + register_name + "_db.tsv")
         register_df.to_csv(register_path, sep='\t', index=False)

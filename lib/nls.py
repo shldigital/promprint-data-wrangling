@@ -3,7 +3,6 @@ import pandas as pd
 import helpers
 
 from pathlib import Path, PosixPath
-from typing import List
 
 
 def columnise_nls_data(df: pd.DataFrame, file_path: PosixPath,
@@ -173,47 +172,3 @@ def filter_nls_date(df: pd.DataFrame,
         register_df.to_csv(register_path, sep='\t', index=False)
 
     return register_df.reindex()
-
-
-def prepare_for_import(df: pd.DataFrame,
-                       drop_columns: List[str] | None,
-                       source_library: str,
-                       register_name: str) -> pd.DataFrame:
-    """
-    Insert and rename required columns to match promprint database schema
-
-    Library codes:
-        BODLEIAN_LIBRARY = "BDL"
-        BRITISH_LIBRARY = "BTL"
-        CAMBRIDGE_LIBRARY = "CAL"
-        SCOTLAND_LIBRARY = "NLS"
-        TRINITY_LIBRARY = "TCD"
-
-    :param df: The dataframe to prepare
-    :param drop_columns: Which columns to drop before export
-    :param source_library: The 3-letter library code for source library
-    :param register_name: Name of register to which these entries are relevant
-    :return df.DataFrame: Exportable dataframe
-    """
-
-    df_len = len(df)
-    df.columns = df.columns.str.lower()
-    if drop_columns is not None:
-        df = df.drop(columns=drop_columns)
-
-    # Don't need original index info, reset it to match new columns
-    df = df.reset_index(drop=True)
-    # Empty 'id' column required for django import for now
-    df['id'] = pd.Series(np.nan, index=range(df_len))
-    df['source_library'] = pd.Series([source_library] * df_len)
-    df['register'] = pd.Series([register_name] * df_len)
-    if register_name != "undated":
-        df[["min_date", "max_date"]] = df[["min_date", "max_date"]].astype(object)
-        df.loc[:,
-               ["min_date", "max_date"
-                ]] = df.loc[:, ["min_date", "max_date"]].map(
-                    lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
-        df[["min_date", "max_date"]] = df[["min_date", "max_date"]].astype(
-           'datetime64[ns]')
-
-    return df
