@@ -2,12 +2,16 @@ import argparse
 import glob
 import logging
 import numpy as np
+import os
 import pandas as pd
-import re
+import sys
 
 from functools import partial
 from pathlib import Path, PosixPath
 from typing import List
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+import helpers.cleaning as cleaning
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO,
@@ -18,38 +22,6 @@ logging.basicConfig(level=logging.INFO,
 console = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console.setFormatter(formatter)
-
-
-def _labelled_file(out_dir: PosixPath, file_path: PosixPath,
-                   label: str) -> PosixPath:
-    """
-    Insert a text label into a filename and append to directory
-    """
-    new_name = file_path.stem + '_' + label + '.tsv'
-    return out_dir / new_name
-
-
-def _remove_metadata(title_string: str) -> str:
-    """
-    Remove strings and numbers not directly related to the title of the entry
-    """
-    square_brackets_clean = re.sub(
-        r'\[(?:microform|illustrated|a novel|plates)\]', '',
-        title_string.lower())
-    editions_clean = re.sub(r'\b(?:n|ed|vol(?:s|ume|umes|))\b', '',
-                            square_brackets_clean)
-    return re.sub(r'\d{1,4}', '', editions_clean)
-
-
-def _clean_title_string(title_string: str) -> str:
-    """
-    Remove/replace ampersands, apostrophes and multi-spaces
-    """
-    no_ampersand = re.sub(r'(&amp;|&)', 'and', title_string)
-    no_apostrophe = re.sub(r"['`]", '', no_ampersand)
-    alphanum = re.sub(r'[^a-zA-Z0-9]', ' ', no_apostrophe)
-    single_spaced = re.sub(r'\s{2,}', ' ', alphanum)
-    return single_spaced.strip().lower()
 
 
 def columnise_nls_data(df: pd.DataFrame, file_path: PosixPath,
@@ -84,7 +56,7 @@ def columnise_nls_data(df: pd.DataFrame, file_path: PosixPath,
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
-        df.to_csv(_labelled_file(out_dir, file_path, 'columnar'),
+        df.to_csv(cleaning.labelled_file(out_dir, file_path, 'columnar'),
                   sep='\t',
                   index=False)
     return df
@@ -101,11 +73,13 @@ def clean_nls_titles(df: pd.DataFrame, file_path: PosixPath,
     :return pd.DataFrame: The columnar dataframe
     """
     df['clean_title'] = (
-        df['Title'].map(_remove_metadata).map(_clean_title_string))
+        df['Title'].map(cleaning.remove_metadata)
+        .map(cleaning.clean_title_string)
+    )
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
-        df.to_csv(_labelled_file(out_dir, file_path, 'clean_titles'),
+        df.to_csv(cleaning.labelled_file(out_dir, file_path, 'clean_titles'),
                   sep='\t',
                   index=False)
     return df
@@ -140,7 +114,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
         dates_df.to_csv(
-            _labelled_file(out_dir, file_path, 'datetypes'),
+            cleaning.labelled_file(out_dir, file_path, 'datetypes'),
             sep='\t',
         )
 
@@ -200,10 +174,10 @@ def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
-        processed_dates.to_csv(_labelled_file(out_dir, file_path,
-                                              'processed_dates'),
+        processed_dates.to_csv(cleaning.labelled_file(out_dir, file_path,
+                                                      'processed_dates'),
                                sep='\t')
-        df.to_csv(_labelled_file(out_dir, file_path, 'cleaned_dates'),
+        df.to_csv(cleaning.labelled_file(out_dir, file_path, 'cleaned_dates'),
                   sep='\t',
                   index=False)
 
@@ -307,7 +281,6 @@ def main(folder: str, debug: bool) -> None:
     # debug output easier (per file instead of the entire compilation)
     for file_path in file_paths:
         print(f"Processing: {file_path}")
-        print(type(file_path))
         # `on_bad_lines` deals with the errant tabs at end of nls data files
         df = pd.read_csv(file_path,
                          sep='\t',
