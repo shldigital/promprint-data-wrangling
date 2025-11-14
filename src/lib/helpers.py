@@ -24,7 +24,9 @@ def remove_metadata(title_string: str) -> str:
         title_string.lower())
     editions_clean = re.sub(r'\b(?:n|ed|vol(?:s|ume|umes|))\b', '',
                             square_brackets_clean)
-    return re.sub(r'\d{1,4}', '', editions_clean)
+    no_numbers = re.sub(r'\d{1,4}(?: *- *\d{1,4}|)', '', editions_clean)
+    single_spaced = re.sub(r'\s{2,}', ' ', no_numbers)
+    return single_spaced.strip()
 
 
 def clean_title_string(title_string: str) -> str:
