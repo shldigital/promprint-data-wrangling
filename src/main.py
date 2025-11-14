@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'lib'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'cli'))
 from cli import clean_nls
+from cli import clean_register
 
 logger = logging.getLogger('')
 logging.basicConfig(level=logging.INFO,
@@ -33,9 +34,14 @@ def main():
     nls_parser.set_defaults(func=clean_nls.main)
 
     register_parser = subparsers.add_parser("register")
-    register_parser.add_argument('file',
+    register_parser.add_argument('input_file',
                                  type=str,
-                                 help="File to clean, in csv format")
+                                 help="register file in csv format")
+    register_parser.add_argument('output_folder',
+                                 type=str,
+                                 help="folder for the formatted output")
+    register_parser.set_defaults(func=clean_register.main)
+
     args = parser.parse_args()
 
     if args.debug:
