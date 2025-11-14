@@ -60,7 +60,7 @@ def clean_titles(df: pd.DataFrame, file_path: PosixPath,
     )
 
     df = pd.concat(
-        [df.loc[:, :'title'], clean_titles, df.loc[:, 'creator':]], axis=1)
+        [clean_titles, df.loc[:, :]], axis=1)
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
