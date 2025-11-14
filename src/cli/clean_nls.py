@@ -1,8 +1,8 @@
 import argparse
 import glob
-import helpers
+import lib.helpers as helpers
+import lib.nls as nls
 import logging
-import nls
 import pandas as pd
 
 from functools import partial
