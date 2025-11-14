@@ -5,8 +5,6 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'lib'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'cli'))
-import helpers
-import nls
 from cli import clean_nls
 
 logger = logging.getLogger('')
