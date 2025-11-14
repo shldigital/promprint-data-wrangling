@@ -1,4 +1,5 @@
-from src.lib.helpers import clean_title_string, remove_metadata
+from src.lib.helpers import clean_title_string, remove_metadata, labelled_file
+from pathlib import Path
 from typing import List
 
 
@@ -99,3 +100,23 @@ def test_remove_metadata_removes_volume_edition_metadata():
     expected_strings: List[str] = ["just my luck"] * 6
     output_strings: List[str] = map(remove_metadata, input_strings)
     assert list(output_strings) == expected_strings
+
+
+def test_labelled_file_changes_ext():
+    input_filename: str = "./tests/test_register/test_register.csv"
+    input_path: Path = Path(input_filename)
+    out_dir = "./tests/test_register/"
+    out_path: Path = Path(out_dir)
+    expected_name: str = "./tests/test_register/test_register_labelled.tsv"
+    expected_path: Path = Path(expected_name)
+    assert labelled_file(out_path, input_path, "labelled", suffix=".tsv") == expected_path
+
+
+def test_labelled_file_doesnt_change_ext():
+    input_filename: str = "./tests/test_register/test_register.csv"
+    input_path: Path = Path(input_filename)
+    out_dir = "./tests/test_register/"
+    out_path: Path = Path(out_dir)
+    expected_name: str = "./tests/test_register/test_register_labelled.csv"
+    expected_path: Path = Path(expected_name)
+    assert labelled_file(out_path, input_path, "labelled") == expected_path

@@ -7,11 +7,14 @@ from pathlib import PosixPath
 
 
 def labelled_file(out_dir: PosixPath, file_path: PosixPath,
-                  label: str) -> PosixPath:
+                  label: str, suffix: str = None) -> PosixPath:
     """
     Insert a text label into a filename and append to directory
     """
-    new_name = file_path.stem + '_' + label + '.tsv'
+
+    if suffix is None:
+        suffix = file_path.suffix
+    new_name = file_path.stem + '_' + label + suffix
     return out_dir / new_name
 
 

@@ -37,7 +37,8 @@ def columnise_nls_data(df: pd.DataFrame, file_path: PosixPath,
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
-        df.to_csv(helpers.labelled_file(out_dir, file_path, 'columnar'),
+        df.to_csv(helpers.labelled_file(out_dir, file_path,
+                                        'columnar', ".tsv"),
                   sep='\t',
                   index=False)
     return df
@@ -72,7 +73,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
         dates_df.to_csv(
-            helpers.labelled_file(out_dir, file_path, 'datetypes'),
+            helpers.labelled_file(out_dir, file_path, 'datetypes', ".tsv"),
             sep='\t',
         )
 
@@ -127,9 +128,11 @@ def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
         processed_dates.to_csv(helpers.labelled_file(out_dir, file_path,
-                                                     'processed_dates'),
+                                                     'processed_dates',
+                                                     ".tsv"),
                                sep='\t')
-        df.to_csv(helpers.labelled_file(out_dir, file_path, 'cleaned_dates'),
+        df.to_csv(helpers.labelled_file(out_dir, file_path, 'cleaned_dates',
+                                        ".tsv"),
                   sep='\t',
                   index=False)
 
