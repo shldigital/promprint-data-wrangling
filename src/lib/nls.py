@@ -29,9 +29,9 @@ def columnise_nls_data(df: pd.DataFrame, file_path: PosixPath,
     # Strip out the data key, but leave other colons found in value
     df = df.map(lambda x: ':'.join(x.split(':')[1:]))
     labels = [
-        'Title', 'Creator', 'Type', 'Publisher', 'Date', 'Language', 'Format',
-        'Relation', 'Rights', 'Identifier', 'Description', 'Subject',
-        'Coverage', 'Contributor', 'Source'
+        'title', 'creator', 'type', 'publisher', 'date', 'language', 'format',
+        'relation', 'rights', 'identifier', 'description', 'subject',
+        'coverage', 'contributor', 'source'
     ]
     df.columns = labels
     if debug:
@@ -68,7 +68,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
 
     # create a dataframe of date matches with original index and match index
     # and match index as a multi-index
-    dates_df = df['Date'].str.extractall(dates_re).astype('float64')
+    dates_df = df['date'].str.extractall(dates_re).astype('float64')
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -122,7 +122,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
     date_range['max_date'] = processed_dates.max(axis=1)
 
     df = pd.concat(  # type: ignore[call-overload]
-        [df.loc[:, :'Date'], date_range, df.loc[:, 'Language':]], axis=1)  # type: ignore[misc]
+        [df.loc[:, :'date'], date_range, df.loc[:, 'language':]], axis=1)  # type: ignore[misc]
 
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
