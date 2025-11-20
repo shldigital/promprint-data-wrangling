@@ -5,8 +5,8 @@ import pytest
 from src.cli.clean_register import main, rename_dict, additional_columns
 from typing import List
 
-input_file = "./tests/test_register/test_register.csv"
-bad_column_labels_file = "./tests/test_register/bad_column_labels.csv"
+input_file = "./tests/test_files/test_register.csv"
+bad_column_labels_file = "./tests/test_files/bad_column_labels.csv"
 output_filename = "test_register_export.csv"
 
 
