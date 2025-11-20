@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import helpers
+import src.lib.helpers as helpers
 
 from pathlib import Path, PosixPath
 
