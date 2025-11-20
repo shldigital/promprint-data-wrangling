@@ -28,9 +28,12 @@ def main():
                         help='Save intermediate stages of cleaning to file')
 
     nls_parser = subparsers.add_parser('nls')
-    nls_parser.add_argument('folder',
+    nls_parser.add_argument('input_folder',
                             type=str,
                             help='Folder of input files in tsv format')
+    nls_parser.add_argument('output_folder',
+                            type=str,
+                            help="folder for the formatted output")
     nls_parser.set_defaults(func=clean_nls.main)
 
     register_parser = subparsers.add_parser("register")

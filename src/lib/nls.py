@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-import src.lib.helpers as helpers
+import lib.helpers as helpers
 
-from pathlib import Path, PosixPath
+from pathlib import PosixPath
 
 
 def columnise_nls_data(df: pd.DataFrame, file_path: PosixPath,
@@ -142,8 +142,6 @@ def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
 def filter_nls_date(df: pd.DataFrame,
                     filter_date: int | None,
                     date_range: float,
-                    folder: str,
-                    debug: bool
                     ) -> pd.DataFrame:
     """
     Filter out dates within a range of years from 'filter_date'
@@ -153,25 +151,16 @@ def filter_nls_date(df: pd.DataFrame,
     :param df: The full dataframe of entries with min and max dates
     :param filter_date: date to filter, if 'None' then returns undated entries
     :param date_range: include dates +/- this value in years
-    :param folder: folder to put filtered dataframe into for debug
-    :param debug: if True save output to 'folder' as tsv
     :return filtered dataframe
     """
 
     mod_year = date_range + 0.1  # Add 0.1 to escape rounding errors
     if filter_date is not None:
-        filter_label = str(filter_date)
         register_df = df.loc[((df['min_date'] - mod_year) < filter_date)
                              & ((df['max_date'] + mod_year) > filter_date)]
         register_df.loc[:, 'min_date'] = register_df.loc[:, 'min_date'].map(
             lambda d: 1678. if d < 1678. else d)
     else:
-        filter_label = "undated"
         register_df = df.loc[df['min_date'].isnull() & df['max_date'].isnull()]
-
-    if debug:
-        register_path = Path(folder).parent.joinpath(
-            folder.rstrip("/") + "_filtered_" + str(filter_label) + ".tsv")
-        register_df.to_csv(register_path, sep='\t', index=False)
 
     return register_df.reindex()
