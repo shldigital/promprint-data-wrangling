@@ -104,9 +104,7 @@ def format_library_set(df: pd.DataFrame,
     df['register'] = pd.Series([register_name] * df_len)
     if register_name != "undated":
         df[["min_date", "max_date"]] = df[["min_date", "max_date"]].astype(object)
-        df.loc[:,
-               ["min_date", "max_date"
-                ]] = df.loc[:, ["min_date", "max_date"]].map(
+        df.loc[:, ["min_date", "max_date"]] = df.loc[:, ["min_date", "max_date"]].map(
                     lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
         df[["min_date", "max_date"]] = df[["min_date", "max_date"]].astype(
            'datetime64[ns]')
