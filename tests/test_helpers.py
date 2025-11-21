@@ -1,4 +1,7 @@
-from src.lib.helpers import clean_title_string, remove_metadata, labelled_file
+import pandas as pd
+
+from src.lib.helpers import (clean_title_string, remove_metadata,
+                             labelled_file, format_library_set)
 from pathlib import Path
 from typing import List
 
@@ -81,22 +84,21 @@ def test_remove_metadata_strips_outer_whitespace():
 
 
 def test_remove_metadata_removes_square_bracket_metadata():
-    input_strings: List[str] = ["second chance [microform]",
-                                "second chance [illustrated]",
-                                "second chance [a novel]",
-                                "second chance [plates]"]
+    input_strings: List[str] = [
+        "second chance [microform]", "second chance [illustrated]",
+        "second chance [a novel]", "second chance [plates]"
+    ]
     expected_strings: List[str] = ["second chance"] * 4
     output_strings: List[str] = map(remove_metadata, input_strings)
     assert list(output_strings) == expected_strings
 
 
 def test_remove_metadata_removes_volume_edition_metadata():
-    input_strings: List[str] = ["just my luck n 23",
-                                "just my luck ed 34",
-                                "just my luck vol 93",
-                                "just my luck vols 190-321",
-                                "just my luck volume 38",
-                                "just my luck volumes 23 - 34"]
+    input_strings: List[str] = [
+        "just my luck n 23", "just my luck ed 34", "just my luck vol 93",
+        "just my luck vols 190-321", "just my luck volume 38",
+        "just my luck volumes 23 - 34"
+    ]
     expected_strings: List[str] = ["just my luck"] * 6
     output_strings: List[str] = map(remove_metadata, input_strings)
     assert list(output_strings) == expected_strings
@@ -109,7 +111,8 @@ def test_labelled_file_changes_ext():
     out_path: Path = Path(out_dir)
     expected_name: str = "./tests/test_register/test_register_labelled.tsv"
     expected_path: Path = Path(expected_name)
-    assert labelled_file(out_path, input_path, "labelled", suffix=".tsv") == expected_path
+    assert labelled_file(out_path, input_path, "labelled",
+                         suffix=".tsv") == expected_path
 
 
 def test_labelled_file_doesnt_change_ext():
@@ -120,3 +123,15 @@ def test_labelled_file_doesnt_change_ext():
     expected_name: str = "./tests/test_register/test_register_labelled.csv"
     expected_path: Path = Path(expected_name)
     assert labelled_file(out_path, input_path, "labelled") == expected_path
+
+
+def test_new_index_added_to_formatted_library_set():
+    source_library = "NLS"
+    df = pd.read_csv("./tests/test_files/nls_sample_filtered_1863b.tsv",
+                     sep='\t',
+                     index_col=0)
+    original_index = df.index
+    new_df = format_library_set(df, None, source_library, "1863b")
+    updated = map(lambda x, y: x == f'{source_library}:{y}', new_df.index,
+                  original_index)
+    assert all(updated)

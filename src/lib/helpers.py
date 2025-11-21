@@ -96,10 +96,9 @@ def format_library_set(df: pd.DataFrame,
     if drop_columns is not None:
         df = df.drop(columns=drop_columns)
 
-    # Don't need original index info, reset it to match new columns
-    df = df.reset_index(drop=True)
-    # Empty 'id' column required for django import for now
-    df['id'] = pd.Series(np.nan, index=range(df_len))
+    df.index = df.index.map(lambda x: f'{source_library}:{x}')
+
+    df.index.names = ['id']
     df['source_library'] = pd.Series([source_library] * df_len)
     df['register'] = pd.Series([register_name] * df_len)
     if register_name != "undated":
