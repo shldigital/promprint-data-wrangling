@@ -57,7 +57,7 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
     if debug:
         compiled_path = helpers.labelled_file(Path(output_folder),
                                               aggregate_path, 'compiled')
-        compiled_df.to_csv(compiled_path, sep='\t', index=False)
+        compiled_df.to_csv(compiled_path, sep='\t')
 
     for register_name, register_date in registers.items():
         register_df = nls.filter_nls_date(compiled_df,
@@ -68,7 +68,7 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
             register_path = helpers.labelled_file(Path(output_folder),
                                                   aggregate_path,
                                                   'filtered_' + register_name)
-            register_df.to_csv(register_path, sep='\t', index=False)
+            register_df.to_csv(register_path, sep='\t')
 
         print(f"No. of entries after filtering for register {register_name}"
               f": {len(register_df)}")
@@ -79,7 +79,7 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
         register_path = helpers.labelled_file(Path(output_folder),
                                               aggregate_path,
                                               register_name + "_export")
-        register_df.to_csv(register_path, sep='\t', index=False)
+        register_df.to_csv(register_path, sep='\t')
 
 
 if __name__ == "__main__":
