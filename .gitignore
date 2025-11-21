@@ -14,3 +14,7 @@ wheels/
 *.csv
 *.log
 .~lock.*
+
+# Includes
+!tests/**/*.csv
+!tests/**/*.tsv
