@@ -1,10 +1,12 @@
 import ast
 import glob
+import pytest
 
 from src.cli.clean_nls import main
 
 input_folder = "./tests/test_files/test_nls/"
 config_file = "./tests/test_files/test_config.py"
+bad_config_file = "./tests/test_files/bad_test_config.py"
 
 
 def test_returns_tsv_file(tmp_path):
@@ -24,3 +26,7 @@ def test_config_names_outputs(tmp_path):
         present.append(any([output.find(register) for register in registers]))
     assert all(present)
 
+
+def test_bad_config_raises(tmp_path):
+    with pytest.raises(SyntaxError):
+        main(input_folder, tmp_path, bad_config_file, False)
