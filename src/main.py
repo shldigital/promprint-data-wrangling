@@ -34,6 +34,9 @@ def main():
     nls_parser.add_argument('output_folder',
                             type=str,
                             help="folder for the formatted output")
+    nls_parser.add_argument('config_file',
+                            type=str,
+                            help='path to config file')
     nls_parser.set_defaults(func=clean_nls.main)
 
     register_parser = subparsers.add_parser("register")

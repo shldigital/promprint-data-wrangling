@@ -1,4 +1,5 @@
 import argparse
+import ast
 import glob
 import lib.helpers as helpers
 import lib.nls as nls
@@ -20,12 +21,14 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 console.setFormatter(formatter)
 
 
-def main(input_folder: str, output_folder: str, debug: bool,
+def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
          **kwargs: Any) -> None:
+    with open(config_file) as data:
+        config = ast.literal_eval(data.read())
+    registers = config["NLS"]["registers"]
     file_paths = map(Path, glob.glob(input_folder + '*.tsv'))
     aggregate_path = Path(Path(input_folder).stem + '.tsv')
 
-    registers = {"1863b": 1863, "undated": None}
     date_range = 1.
     compiled_df = pd.DataFrame()
 
