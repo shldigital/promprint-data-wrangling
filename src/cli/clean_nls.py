@@ -26,10 +26,10 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
     with open(config_file) as data:
         config = ast.literal_eval(data.read())
     registers = config["NLS"]["registers"]
+    date_range = config["NLS"]["date_range"]
     file_paths = map(Path, glob.glob(input_folder + '*.tsv'))
     aggregate_path = Path(Path(input_folder).stem + '.tsv')
 
-    date_range = 1.
     compiled_df = pd.DataFrame()
 
     # N.B. We're doing cleaning per file so that a human can inspect
