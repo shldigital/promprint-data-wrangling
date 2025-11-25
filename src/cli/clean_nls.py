@@ -1,4 +1,3 @@
-import argparse
 import ast
 import glob
 import lib.helpers as helpers
@@ -11,14 +10,6 @@ from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger('')
-logging.basicConfig(level=logging.INFO,
-                    filename="promprint-cleaning.log",
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    filemode='w')
-
-console = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-console.setFormatter(formatter)
 
 
 def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
@@ -82,24 +73,3 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
                                               aggregate_path,
                                               register_name + "_export")
         register_df.to_csv(register_path, sep='\t')
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input_folder',
-                        help='Folder of input files in tsv format')
-    parser.add_argument('output_folder', help='Folder of output files')
-    parser.add_argument('-d',
-                        '--debug',
-                        action='store_true',
-                        help='Save intermediate stages of cleaning to file')
-
-    args = parser.parse_args()
-
-    if args.debug:
-        console.setLevel(logging.INFO)
-    else:
-        console.setLevel(logging.WARNING)
-    logging.getLogger('').addHandler(console)
-
-    main(args.input_folder, args.debug)

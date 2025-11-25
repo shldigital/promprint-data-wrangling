@@ -1,4 +1,3 @@
-import argparse
 import logging
 import pandas as pd
 
@@ -18,14 +17,6 @@ rename_dict = {
 additional_columns = ["creator", "clean_title"]
 
 logger = logging.getLogger('')
-logging.basicConfig(level=logging.INFO,
-                    filename="promprint-cleaning.log",
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    filemode='w')
-
-console = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-console.setFormatter(formatter)
 
 
 def main(input_file: str, output_folder: str, debug: bool,
@@ -50,22 +41,3 @@ def main(input_file: str, output_folder: str, debug: bool,
     new_name = file_path.stem + '_export.csv'
     output_path = Path(output_folder)
     df.to_csv(output_path / new_name)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('folder', help='Folder of input files in tsv format')
-    parser.add_argument('-d',
-                        '--debug',
-                        action='store_true',
-                        help='Save intermediate stages of cleaning to file')
-
-    args = parser.parse_args()
-
-    if args.debug:
-        console.setLevel(logging.INFO)
-    else:
-        console.setLevel(logging.WARNING)
-    logging.getLogger('').addHandler(console)
-
-    main(args.folder, args.debug)
