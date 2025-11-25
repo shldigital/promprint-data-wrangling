@@ -15,7 +15,7 @@ rename_dict = {
     "Publisher": "publisher"
 }
 
-additional_columns = ["clean_title", "creator", "date", "id"]
+additional_columns = ["creator", "clean_title"]
 
 logger = logging.getLogger('')
 logging.basicConfig(level=logging.INFO,
@@ -44,10 +44,12 @@ def main(input_file: str, output_folder: str, debug: bool,
 
     required_columns = list(rename_dict.values()) + additional_columns
     df = df.reindex(columns=required_columns)
+    df.index = df["register"] + ":" + df.index.astype(str)
+    df.index.name = "id"
 
     new_name = file_path.stem + '_export.csv'
     output_path = Path(output_folder)
-    df.to_csv(output_path / new_name, index=False)
+    df.to_csv(output_path / new_name)
 
 
 if __name__ == "__main__":

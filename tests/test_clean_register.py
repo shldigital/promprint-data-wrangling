@@ -32,3 +32,13 @@ def test_titles_cleaned(tmp_path):
     df: pd.DataFrame = pd.read_csv(tmp_path / output_filename)
     expected_title = "gospel herald new series"
     assert df["clean_title"].iloc[0] == expected_title
+
+
+def test_new_index_added_to_formatted_register_set(tmp_path):
+    df = pd.read_csv(input_file)
+    original_index = df.index
+    main(input_file, tmp_path, False)
+    new_df = pd.read_csv(tmp_path / output_filename)
+    updated = map(lambda new, old, register: new == f'{register}:{old}',
+                  new_df["id"], original_index, df["Register Year"])
+    assert all(updated)
