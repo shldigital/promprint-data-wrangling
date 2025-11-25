@@ -18,6 +18,11 @@ def test_returns_tsv_file(tmp_path):
     assert len(outputs) > 0
 
 
+def test_empty_folder_raises(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        main("./tests/empty_folder/", tmp_path, config_file, False)
+
+
 def test_output_created_for_each_register(tmp_path):
     main(input_folder, tmp_path, config_file, False)
     outputs = glob.glob(str(tmp_path) + '/*.tsv')

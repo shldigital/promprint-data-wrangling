@@ -27,7 +27,9 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
         config = ast.literal_eval(data.read())
     registers = config["NLS"]["registers"]
     date_range = config["NLS"]["date_range"]
-    file_paths = map(Path, glob.glob(input_folder + '*.txt'))
+    file_paths = list(map(Path, glob.glob(input_folder + '*.txt')))
+    if len(file_paths) < 1:
+        raise FileNotFoundError(f"No data found in {input_folder}")
     aggregate_path = Path(Path(input_folder).stem + '.tsv')
 
     compiled_df = pd.DataFrame()
