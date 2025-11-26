@@ -1,7 +1,7 @@
 [project]
 name = "promprint-data-cleaning"
 version = "0.1.0"
-description = "General scripts for cleaning promprint data at various stages, see readme for usage"
+description = "General scripts for cleaning promprint data"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
