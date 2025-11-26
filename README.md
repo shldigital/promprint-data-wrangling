@@ -3,7 +3,7 @@ These scripts are available for cleaning and organising different datasets gathe
 
 The purpose of the scripts is to:
 
-1. Make book titles more programmatically comparable across different collections of data. We can do this by 'cleaning' titles i.e. by sensibly replacing non-alphanumeric characters and 'metadata'-like information (such as volume or edition number, see the [source](./src/lib/helpers.py:L19) for more specifics)
+1. Make book titles more programmatically comparable across different collections of data. We can do this by 'cleaning' titles i.e. by sensibly replacing non-alphanumeric characters and 'metadata'-like information (such as volume or edition number, see the [source](./src/lib/helpers.py) for more specifics)
 2. Format the data so that it can be imported into later scripts or databases that are used to actually compare/match titles, and to view, edit and confirm or reject the matches that are found.
 
 ## Installation
@@ -25,8 +25,7 @@ Note that the first time you run any of the commands above, `uv` will automatica
 
 So far there are two main datasets that are handled by these scripts:
 
-### The [National Library of Scotland](https://data.nls.uk/data/metadata-collections/catalogue-published-material/
-)'s full catalogue of published material:
+### The [National Library of Scotland](https://data.nls.uk/data/metadata-collections/catalogue-published-material/)'s full catalogue of published material:
 
 This collection comprises all of the published material held by the National Library of Scotland (at the time of the database's compilation, i.e. it is not a live database). These can be downloaded in `xml` format, or `txt` format. These scripts use the `txt` format, which is essentially a tab-delimeted text table. The whole dataset is around 4GB large, and broken down into 50 separate files with around 100,000 entries per file (for a total of around 5 million entries).
 
@@ -37,7 +36,7 @@ Usage:
 uv run src/main.py nls /folder/of/nls/data/ /output/folder/ ./config.py
 ```
 
-**Note that to date, the file labelled number 45 is in a different format to the rest of the dataset, and is not yet handled by these scripts. This file must therefore be removed from the folder in order to succesfully process the rest.****
+**Note that to date, the file labelled number 45 is in a different format to the rest of the dataset, and is not yet handled by these scripts. This file must therefore be removed from the folder in order to succesfully process the rest.**
 
 The output goes into a separate folder of the user's choice. The user also passes in a config file, here named `config.py`, but which can take any name. This file contains a python dictionary in the following format:
 
@@ -72,4 +71,4 @@ Usage:
 uv run src/main.py register /folder/of/register.csv /output/folder/
 ```
 
-[^1] Mark Humphries and Lianne C. Leddy, 2025. ArchiveStudio 1.0 Beta. Department of History: Wilfrid Laurier University.
+[^1]: Mark Humphries and Lianne C. Leddy, 2025. ArchiveStudio 1.0 Beta. Department of History: Wilfrid Laurier University.
