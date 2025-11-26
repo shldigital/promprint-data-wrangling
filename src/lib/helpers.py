@@ -1,13 +1,11 @@
-import numpy as np
 import pandas as pd
 import re
-from typing import List
 
-from pathlib import PosixPath
+from pathlib import Path
 
 
-def labelled_file(out_dir: PosixPath, file_path: PosixPath,
-                  label: str, suffix: str = None) -> PosixPath:
+def labelled_file(out_dir: Path, file_path: Path,
+                  label: str, suffix: str = None) -> Path:
     """
     Insert a text label into a filename and append to directory
     """
@@ -43,7 +41,7 @@ def clean_title_string(title_string: str) -> str:
     return single_spaced.strip().lower()
 
 
-def clean_titles(df: pd.DataFrame, file_path: PosixPath,
+def clean_titles(df: pd.DataFrame, file_path: Path,
                  debug: bool) -> pd.DataFrame:
     """
     Collecting the different title cleaning functions here
@@ -71,7 +69,7 @@ def clean_titles(df: pd.DataFrame, file_path: PosixPath,
 
 
 def format_library_set(df: pd.DataFrame,
-                       drop_columns: List[str] | None,
+                       drop_columns: list[str] | None,
                        source_library: str,
                        register_name: str) -> pd.DataFrame:
     """
@@ -101,8 +99,13 @@ def format_library_set(df: pd.DataFrame,
     df.index.names = ['id']
     df['source_library'] = pd.Series([source_library] * df_len)
     df['register'] = pd.Series([register_name] * df_len)
+
     if register_name != "undated":
+        # NB manual type casting is required to avoid deprecation warnings and
+        # to get consistent output
         df[["min_date", "max_date"]] = df[["min_date", "max_date"]].astype(object)
+        # NB using .loc[:,...] format to avoid runtime warning about ambiguity
+        # of making a copy/changing in place (we are making a copy)
         df.loc[:, ["min_date", "max_date"]] = df.loc[:, ["min_date", "max_date"]].map(
                     lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
         df[["min_date", "max_date"]] = df[["min_date", "max_date"]].astype(

@@ -14,11 +14,13 @@ logger = logging.getLogger('')
 
 def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
          **kwargs: Any) -> None:
+
     with open(config_file) as data:
-        config = ast.literal_eval(data.read())
-    registers = config["NLS"]["registers"]
-    date_range = config["NLS"]["date_range"]
-    file_paths = list(map(Path, glob.glob(input_folder + '*.txt')))
+        config: dict = ast.literal_eval(data.read())
+    registers: dict[str, int] = config["NLS"]["registers"]
+    date_range: float = config["NLS"]["date_range"]
+
+    file_paths: list[Path] = list(map(Path, glob.glob(input_folder + '*.txt')))
     if len(file_paths) < 1:
         raise FileNotFoundError(f"No data found in {input_folder}")
     aggregate_path = Path(Path(input_folder).stem + '.tsv')
@@ -48,8 +50,8 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
     print(f"Total No. of entries: {len(compiled_df)}")
 
     if debug:
-        compiled_path = helpers.labelled_file(Path(output_folder),
-                                              aggregate_path, 'compiled')
+        compiled_path: Path = helpers.labelled_file(Path(output_folder),
+                                                    aggregate_path, 'compiled')
         compiled_df.to_csv(compiled_path, sep='\t')
 
     for register_name, register_date in registers.items():
@@ -58,9 +60,9 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
                                           date_range)
 
         if debug:
-            register_path = helpers.labelled_file(Path(output_folder),
-                                                  aggregate_path,
-                                                  'filtered_' + register_name)
+            register_path: Path = helpers.labelled_file(Path(output_folder),
+                                                        aggregate_path,
+                                                        'filtered_' + register_name)
             register_df.to_csv(register_path, sep='\t')
 
         print(f"No. of entries after filtering for register {register_name}"
@@ -69,7 +71,7 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
         source_library = 'NLS'
         register_df = helpers.format_library_set(register_df, None,
                                                  source_library, register_name)
-        register_path = helpers.labelled_file(Path(output_folder),
-                                              aggregate_path,
-                                              register_name + "_export")
+        register_path: Path = helpers.labelled_file(Path(output_folder),
+                                                    aggregate_path,
+                                                    register_name + "_export")
         register_df.to_csv(register_path, sep='\t')

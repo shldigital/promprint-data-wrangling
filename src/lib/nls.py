@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 import lib.helpers as helpers
 
-from pathlib import PosixPath
+from pathlib import Path
 
 
-def columnise_nls_data(df: pd.DataFrame, file_path: PosixPath,
+def columnise_nls_data(df: pd.DataFrame, file_path: Path,
                        debug: bool) -> pd.DataFrame:
     """
     Reformat data provided by National Library of Scotland.
@@ -44,7 +44,7 @@ def columnise_nls_data(df: pd.DataFrame, file_path: PosixPath,
     return df
 
 
-def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
+def clean_nls_dates(df: pd.DataFrame, file_path: Path,
                     debug: bool) -> pd.DataFrame:
     """
     Clean the dates of the National Library of Scotland dataset.
@@ -78,21 +78,21 @@ def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
         )
 
     # Grab the question and circa dates with their original indices
-    question_dates = dates_df.pop('question_date').groupby(
+    question_dates: pd.Series = dates_df.pop('question_date').groupby(
         level=0).first().dropna()
 
-    circa_dates = dates_df.pop('circa_date').groupby(level=0).first().dropna()
+    circa_dates: pd.Series = dates_df.pop('circa_date').groupby(level=0).first().dropna()
 
     # Grab the unqualified dates with original indices into one series,
     # if there are more than one, take the lowest
-    min_uq_dates = dates_df.groupby(level=0).min().rename(
+    min_uq_dates: pd.Series = dates_df.groupby(level=0).min().rename(
         columns={
             'unqualified_date': 'min_uq_date'
         }).dropna()
 
     # Grab the unqualified dates with original indices into one series,
     # if there are more than one, take the highest
-    max_uq_dates = dates_df.groupby(level=0).max().rename(
+    max_uq_dates: pd.Series = dates_df.groupby(level=0).max().rename(
         columns={
             'unqualified_date': 'max_uq_date'
         }).dropna()
@@ -125,7 +125,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: PosixPath,
         [df.loc[:, :'date'], date_range, df.loc[:, 'language':]], axis=1)  # type: ignore[misc]
 
     if debug:
-        out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
+        out_dir: Path = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
         processed_dates.to_csv(helpers.labelled_file(out_dir, file_path,
                                                      'processed_dates',
@@ -154,7 +154,7 @@ def filter_nls_date(df: pd.DataFrame,
     :return filtered dataframe
     """
 
-    mod_year = date_range + 0.1  # Add 0.1 to escape rounding errors
+    mod_year: float = date_range + 0.1  # Add 0.1 to escape rounding errors
     if filter_date is not None:
         register_df = df.loc[((df['min_date'] - mod_year) < filter_date)
                              & ((df['max_date'] + mod_year) > filter_date)]
