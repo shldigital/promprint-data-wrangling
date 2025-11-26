@@ -1,0 +1,51 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: promprint-data-cleaning
+message: General scripts for cleaning promprint data
+type: software
+authors:
+  - given-names: Nicolas
+    family-names: Seymour-Smith
+    email: nrs23@sussex.ac.uk
+    affiliation: University of Sussex
+    orcid: 'https://orcid.org/0009-0008-2177-2153'
+  - given-names: Hannah
+    family-names: Field
+    email: h.field@sussex.ac.uk
+    affiliation: University of Sussex
+    orcid: 'https://orcid.org/0000-0003-1258-9388'
+  - given-names: Milan
+    family-names: Terlunen
+    email: m.terlunen@sussex.ac.uk
+    affiliation: University of Sussex
+    orcid: 'https://orcid.org/0000-0002-9904-6513'
+repository-code: 'https://github.com/shldigital/promprint-data-wrangling'
+url: 'https://www.promiscuousprint.com/'
+abstract: >
+  These scripts are available for cleaning and organising
+  different datasets gathered as part of the Promiscuous
+  Print project.
+
+
+  The purpose of the scripts is to:
+
+
+  - Make book titles more programmatically comparable across
+  different collections of data. We can do this by
+  'cleaning' titles i.e. by sensibly replacing
+  non-alphanumeric characters and 'metadata'-like
+  information (such as volume or edition number, see the
+  source for more specifics)
+
+  - Format the data so that it can be imported into later
+  scripts or databases that are used to actually
+  compare/match titles, and to view, edit and confirm or
+  reject the matches that are found.
+keywords:
+  - digital humanities
+license: GPL-3.0
+commit: 773b2d34b5a67f29c9991b1ee5f272e70f7e6f92
+version: v1.0.0
+date-released: '2025-11-26'
