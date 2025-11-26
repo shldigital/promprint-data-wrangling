@@ -21,25 +21,27 @@ console.setFormatter(formatter)
 
 def main():
     parser = argparse.ArgumentParser(
-        description="General scripts for cleaning promprint data at various stages")
+        description="General scripts for cleaning promprint data")
     subparsers = parser.add_subparsers(help="Datasets to manipulate")
     parser.add_argument("-d", "--debug",
                         action='store_true',
                         help='Save intermediate stages of cleaning to file')
 
-    nls_parser = subparsers.add_parser('nls')
+    nls_parser = subparsers.add_parser('nls',
+                                       help="National Library of Scotland data")
     nls_parser.add_argument('input_folder',
                             type=str,
-                            help='Folder of input files in tsv format')
+                            help='Folder of input files in txt format')
     nls_parser.add_argument('output_folder',
                             type=str,
                             help="folder for the formatted output")
     nls_parser.add_argument('config_file',
                             type=str,
-                            help='path to config file')
+                            help='config file with registers to filter')
     nls_parser.set_defaults(func=clean_nls.main)
 
-    register_parser = subparsers.add_parser("register")
+    register_parser = subparsers.add_parser('register',
+                                            help="Data from the Stationer's Hall registers")
     register_parser.add_argument('input_file',
                                  type=str,
                                  help="register file in csv format")
