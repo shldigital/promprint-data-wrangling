@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from src.lib.helpers import (clean_title_string, remove_metadata,
                              labelled_file, format_library_set)
@@ -135,3 +136,12 @@ def test_new_index_added_to_formatted_library_set():
     updated = map(lambda x, y: x == f'{source_library}:{y}', new_df.index,
                   original_index)
     assert all(updated)
+
+
+def test_duplicate_indices_raises():
+    source_library = "NLS"
+    df = pd.read_csv("./tests/test_files/nls_duplicate_indices.tsv",
+                     sep='\t',
+                     index_col=0)
+    with pytest.raises(IndexError):
+        format_library_set(df, None, source_library, "1863b")

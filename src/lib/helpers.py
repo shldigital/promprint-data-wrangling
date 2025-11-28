@@ -94,6 +94,10 @@ def format_library_set(df: pd.DataFrame,
     if drop_columns is not None:
         df = df.drop(columns=drop_columns)
 
+    duplicates = df.index.duplicated()
+    if any(duplicates):
+        print(df[duplicates])
+        raise IndexError("Duplicate indices found in dataframe")
     df.index = df.index.map(lambda x: f'{source_library}:{x}')
 
     df.index.names = ['id']
