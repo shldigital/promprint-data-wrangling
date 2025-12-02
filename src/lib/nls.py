@@ -1,8 +1,12 @@
+import lib.helpers as helpers
+import logging
 import numpy as np
 import pandas as pd
-import lib.helpers as helpers
+import re
 
 from pathlib import Path
+
+logger = logging.getLogger('')
 
 
 def columnise_nls_data(df: pd.DataFrame, file_path: Path,
@@ -39,8 +43,34 @@ def columnise_nls_data(df: pd.DataFrame, file_path: Path,
         out_dir.mkdir(parents=True, exist_ok=True)
         df.to_csv(helpers.labelled_file(out_dir, file_path,
                                         'columnar', ".tsv"),
-                  sep='\t',
-                  index=False)
+                  sep='\t')
+    return df
+
+
+def add_file_data_to_index(df: pd.DataFrame, file_path: Path):
+    """
+    Adds a file identifier to the data index (which is the row number).
+    Expects a file path like '/path/to/filename_filenumber.txt'
+    and adds "filenumber" as a prefix to the index
+
+    e.g. '/path/to/data_34.txt' outputs '34:<row_number>' as the index
+
+    If the file_path does not follow this format then the full filename will
+    be taken as the prefix
+
+    :param df: column formatted dataframe of NLS data
+    :type df: pd.DataFrame
+    :param file_path: Path to the file that the dataframe was loaded from
+    :type file_path: pathlib.Path
+    :return: Dataframe with "file_id" column added
+    :rtype: pd.DataFrame
+    """
+    try:
+        prefix = re.search(r"(\d{2})\.txt", str(file_path)).group(1)
+    except AttributeError:
+        logger.warning(f"{file_path} not numbered, using full path as index prefix")
+        prefix = file_path.stem
+    df.index = df.index.map(lambda x: f'{prefix}:{x}')
     return df
 
 
@@ -58,8 +88,6 @@ def clean_nls_dates(df: pd.DataFrame, file_path: Path,
     :param debug: if True then save the dataframe out as a tsv file
     :return pd.DataFrame: Cleaned entries
     """
-
-    df_len = len(df)
 
     # Separate out different types of date in case they're relevant
     dates_re = (r'(?:c(?:a\.?|irca|) ?(?P<circa_date>\d{4})|'
@@ -101,7 +129,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: Path,
     # the new frame has the same size/index as the original
     processed_dates = pd.DataFrame(
         np.nan,
-        index=range(df_len),
+        index=df.index,
         columns=['question_date', 'circa_date', 'min_uq_date', 'max_uq_date'])
 
     # Insert the various dates at their labelled indices
@@ -113,7 +141,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: Path,
     # Make a new empty dataframe to hold the reduced dates data
     # the new frame has the same size/index as the original
     date_range = pd.DataFrame(np.nan,
-                              index=range(df_len),
+                              index=df.index,
                               columns=['min_date', 'max_date'])
 
     # NB: Effectively ignoring different date types for now
@@ -133,8 +161,7 @@ def clean_nls_dates(df: pd.DataFrame, file_path: Path,
                                sep='\t')
         df.to_csv(helpers.labelled_file(out_dir, file_path, 'cleaned_dates',
                                         ".tsv"),
-                  sep='\t',
-                  index=False)
+                  sep='\t')
 
     return df
 

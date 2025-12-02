@@ -133,8 +133,8 @@ def test_new_index_added_to_formatted_library_set():
                      index_col=0)
     original_index = df.index
     new_df = format_library_set(df, None, source_library, "1863b")
-    updated = map(lambda x, y: x == f'{source_library}:{y}', new_df.index,
-                  original_index)
+    updated = map(lambda x, y: x == f'{source_library}:{y}',
+                  new_df.index, original_index)
     assert all(updated)
 
 

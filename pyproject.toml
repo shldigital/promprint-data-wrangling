@@ -1,6 +1,6 @@
 [project]
 name = "promprint-data-cleaning"
-version = "0.1.0"
+version = "1.1.0"
 description = "General scripts for cleaning promprint data"
 readme = "README.md"
 requires-python = ">=3.13"

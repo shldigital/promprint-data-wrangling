@@ -39,6 +39,8 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
         df = (df.pipe(nls.columnise_nls_data,  # type: ignore[call-overload]
                       file_path=file_path,
                       debug=debug)
+              .pipe(nls.add_file_data_to_index,
+                    file_path=file_path)
               .pipe(helpers.clean_titles,
                     file_path=file_path,
                     debug=debug)
