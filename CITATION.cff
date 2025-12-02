@@ -2,7 +2,7 @@
 # Visit https://bit.ly/cffinit to generate yours today!
 
 cff-version: 1.2.0
-title: promprint-data-cleaning
+title: promprint-data-wrangling
 message: General scripts for cleaning promprint data
 type: software
 authors:
