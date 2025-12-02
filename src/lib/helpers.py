@@ -62,9 +62,8 @@ def clean_titles(df: pd.DataFrame, file_path: Path,
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
-        df.to_csv(labelled_file(out_dir, file_path, 'clean_titles'),
-                  sep='\t',
-                  index=False)
+        df.to_csv(labelled_file(out_dir, file_path, 'clean_titles', ".tsv"),
+                  sep='\t')
     return df
 
 
