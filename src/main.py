@@ -10,7 +10,7 @@ from cli import clean_register
 
 logger = logging.getLogger('')
 logging.basicConfig(level=logging.INFO,
-                    filename="promprint-cleaning.log",
+                    filename="promprint-data-wrangling.log",
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     filemode='w')
 
