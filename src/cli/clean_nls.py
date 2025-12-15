@@ -25,10 +25,8 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
         raise FileNotFoundError(f"No data found in {input_folder}")
     aggregate_path = Path(Path(input_folder).stem + '.tsv')
 
-    compiled_df = pd.DataFrame()
+    section_list = []
 
-    # N.B. We're doing cleaning per file so that a human can inspect
-    # debug output easier (per file instead of the entire compilation)
     for file_path in file_paths:
         print(f"Processing: {file_path}")
         # `on_bad_lines` deals with the errant tabs at end of nls data files
@@ -40,14 +38,17 @@ def main(input_folder: str, output_folder: str, config_file: str, debug: bool,
                       file_path=file_path,
                       debug=debug)
               .pipe(nls.add_file_data_to_index,
-                    file_path=file_path)
-              .pipe(helpers.clean_titles,
-                    file_path=file_path,
-                    debug=debug)
-              .pipe(nls.clean_nls_dates,
-                    file_path=file_path,
-                    debug=debug))
-        compiled_df = pd.concat([compiled_df, df])
+                    file_path=file_path))
+
+        section_list.append(df)
+    compiled_df: pd.DataFrame = pd.concat(section_list)
+
+    compiled_df = (compiled_df.pipe(helpers.clean_titles,
+                                    file_path=file_path,
+                                    debug=debug)
+                   .pipe(nls.clean_nls_dates,
+                         file_path=file_path,
+                         debug=debug))
 
     print(f"Total No. of entries: {len(compiled_df)}")
 
