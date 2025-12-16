@@ -9,6 +9,7 @@ from src.cli.clean_nls import main
 input_folder = "./tests/test_files/test_nls/"
 config_file = "./tests/test_files/test_config.py"
 bad_config_file = "./tests/test_files/bad_test_config.py"
+wrong_keys_config_file = "./tests/test_files/wrong_keys_config.py"
 one_register_config_file = "./tests/test_files/one_register_test_config.py"
 
 
@@ -38,6 +39,11 @@ def test_output_created_for_each_register(tmp_path):
 def test_bad_config_raises(tmp_path):
     with pytest.raises(SyntaxError):
         main(input_folder, tmp_path, bad_config_file, False)
+
+
+def test_wrong_key_config_raises(tmp_path):
+    with pytest.raises(KeyError):
+        main(input_folder, tmp_path, wrong_keys_config_file, False)
 
 
 def test_date_range_in_output(tmp_path):

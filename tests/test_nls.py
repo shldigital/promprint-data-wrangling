@@ -28,3 +28,12 @@ def test_no_file_number_falls_back_to_filename_as_id():
     id = "test_nls_sample"
     updated = map(lambda x, y: x == f'{id}:{y}', df.index, original_index)
     assert all(updated)
+
+
+def test_essential_columns_present_after_columnise():
+    input_folder = "./tests/test_files/test_nls/"
+    file_path = Path(glob.glob(input_folder + '*.txt')[0])
+    df = pd.read_csv(file_path, sep='\t')
+    df = columnise_nls_data(df, file_path, False)
+    essential_cols = {'title', 'creator', 'publisher', 'date'}
+    assert essential_cols.issubset(set(df.columns))
