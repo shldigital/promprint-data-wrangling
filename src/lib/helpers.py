@@ -72,7 +72,7 @@ def format_library_set(df: pd.DataFrame,
                        source_library: str,
                        register_name: str) -> pd.DataFrame:
     """
-    Format a library dataset to match promprint database schema
+    Format a library dataset to match promprint database schema.
 
     Library codes:
         BODLEIAN_LIBRARY = "BDL"
@@ -87,7 +87,6 @@ def format_library_set(df: pd.DataFrame,
     :param register_name: Name of register to which these entries are relevant
     :return df.DataFrame: Exportable dataframe
     """
-
     df_len = len(df)
     df.columns = df.columns.str.lower()
     if drop_columns is not None:
@@ -100,8 +99,8 @@ def format_library_set(df: pd.DataFrame,
     df.index = df.index.map(lambda x: f'{source_library}:{x}')
 
     df.index.names = ['id']
-    df['source_library'] = pd.Series([source_library] * df_len)
-    df['register'] = pd.Series([register_name] * df_len)
+    df['source_library'] = pd.Series([source_library] * df_len, index=df.index)
+    df['register'] = pd.Series([register_name] * df_len, index=df.index)
 
     if register_name != "undated":
         # NB manual type casting is required to avoid deprecation warnings and
