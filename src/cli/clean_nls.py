@@ -1,4 +1,5 @@
 """Clean and filter data from National Library of Scotland collection."""
+
 import ast
 import glob
 import lib.helpers as helpers
@@ -61,6 +62,11 @@ def main(
     compiled_df = compiled_df.pipe(
         helpers.clean_titles, file_path=file_path, debug=debug
     ).pipe(nls.clean_nls_dates, file_path=file_path, debug=debug)
+
+    compiled_df["clean_publisher"] = compiled_df["publisher"].map(
+        helpers.clean_data_string
+    )
+    compiled_df["clean_creator"] = compiled_df["creator"].map(helpers.clean_data_string)
 
     print(f"Total No. of entries: {len(compiled_df)}")
 
