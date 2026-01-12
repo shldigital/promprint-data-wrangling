@@ -4,47 +4,41 @@ import re
 from pathlib import Path
 
 
-def labelled_file(out_dir: Path, file_path: Path,
-                  label: str, suffix: str = None) -> Path:
-    """
-    Insert a text label into a filename and append to directory
-    """
-
+def labelled_file(
+    out_dir: Path, file_path: Path, label: str, suffix: str = None
+) -> Path:
+    """Insert a text label into a filename and append to directory."""
     if suffix is None:
         suffix = file_path.suffix
-    new_name = file_path.stem + '_' + label + suffix
+    new_name = file_path.stem + "_" + label + suffix
     return out_dir / new_name
 
 
 def remove_metadata(title_string: str) -> str:
-    """
-    Remove strings and numbers not directly related to the title of the entry
-    """
+    """Remove strings and numbers not directly related to the title of the entry."""
     square_brackets_clean = re.sub(
-        r'\[(?:microform|illustrated|a novel|plates)\]', '',
-        title_string.lower())
-    editions_clean = re.sub(r'\b(?:n(?:os|)|ed|pt|vol(?:s|ume|umes|))\b', '',
-                            square_brackets_clean)
-    no_numbers = re.sub(r'\d{1,4}(?: *- *\d{1,4}|)', '', editions_clean)
-    single_spaced = re.sub(r'\s{2,}', ' ', no_numbers)
+        r"\[(?:microform|illustrated|a novel|plates)\]", "", title_string.lower()
+    )
+    editions_clean = re.sub(
+        r"\b(?:n(?:os|)|ed|pt|vol(?:s|ume|umes|))\b", "", square_brackets_clean
+    )
+    no_numbers = re.sub(r"\d{1,4}(?: *- *\d{1,4}|)", "", editions_clean)
+    single_spaced = re.sub(r"\s{2,}", " ", no_numbers)
     return single_spaced.strip()
 
 
 def clean_title_string(title_string: str) -> str:
-    """
-    Remove/replace ampersands, apostrophes and multi-spaces
-    """
-    no_ampersand = re.sub(r'(&amp;|&)', 'and', title_string)
-    no_apostrophe = re.sub(r"['`]", '', no_ampersand)
-    alphanum = re.sub(r'[^a-zA-Z0-9]', ' ', no_apostrophe)
-    single_spaced = re.sub(r'\s{2,}', ' ', alphanum)
+    """Remove/replace ampersands, apostrophes and multi-spaces."""
+    no_ampersand = re.sub(r"(&amp;|&)", "and", title_string)
+    no_apostrophe = re.sub(r"['`]", "", no_ampersand)
+    alphanum = re.sub(r"[^a-zA-Z0-9]", " ", no_apostrophe)
+    single_spaced = re.sub(r"\s{2,}", " ", alphanum)
     return single_spaced.strip().lower()
 
 
-def clean_titles(df: pd.DataFrame, file_path: Path,
-                 debug: bool) -> pd.DataFrame:
+def clean_titles(df: pd.DataFrame, file_path: Path, debug: bool) -> pd.DataFrame:
     """
-    Collecting the different title cleaning functions here
+    Collect the different title cleaning functions here.
 
     :param df: The dataframe with uncleaned titles in columnar format
     :param file_path: File path of original data, to name debug output files
@@ -52,25 +46,23 @@ def clean_titles(df: pd.DataFrame, file_path: Path,
     :return pd.DataFrame: The columnar dataframe
     """
     clean_titles = (
-        df['title'].map(remove_metadata)
-        .map(clean_title_string)
-        .rename('clean_title')
+        df["title"].map(remove_metadata).map(clean_title_string).rename("clean_title")
     )
 
-    df = pd.concat(
-        [clean_titles, df.loc[:, :]], axis=1)
+    df = pd.concat([clean_titles, df.loc[:, :]], axis=1)
     if debug:
         out_dir = file_path.parent.joinpath(file_path.stem + "_clean")
         out_dir.mkdir(parents=True, exist_ok=True)
-        df.to_csv(labelled_file(out_dir, file_path, 'clean_titles', ".tsv"),
-                  sep='\t')
+        df.to_csv(labelled_file(out_dir, file_path, "clean_titles", ".tsv"), sep="\t")
     return df
 
 
-def format_library_set(df: pd.DataFrame,
-                       drop_columns: list[str] | None,
-                       source_library: str,
-                       register_name: str) -> pd.DataFrame:
+def format_library_set(
+    df: pd.DataFrame,
+    drop_columns: list[str] | None,
+    source_library: str,
+    register_name: str,
+) -> pd.DataFrame:
     """
     Format a library dataset to match promprint database schema.
 
@@ -96,11 +88,11 @@ def format_library_set(df: pd.DataFrame,
     if any(duplicates):
         print(df[duplicates])
         raise IndexError("Duplicate indices found in dataframe")
-    df.index = df.index.map(lambda x: f'{source_library}:{x}')
+    df.index = df.index.map(lambda x: f"{source_library}:{x}")
 
-    df.index.names = ['id']
-    df['source_library'] = pd.Series([source_library] * df_len, index=df.index)
-    df['register'] = pd.Series([register_name] * df_len, index=df.index)
+    df.index.names = ["id"]
+    df["source_library"] = pd.Series([source_library] * df_len, index=df.index)
+    df["register"] = pd.Series([register_name] * df_len, index=df.index)
 
     if register_name != "undated":
         # NB manual type casting is required to avoid deprecation warnings and
@@ -109,8 +101,10 @@ def format_library_set(df: pd.DataFrame,
         # NB using .loc[:,...] format to avoid runtime warning about ambiguity
         # of making a copy/changing in place (we are making a copy)
         df.loc[:, ["min_date", "max_date"]] = df.loc[:, ["min_date", "max_date"]].map(
-                    lambda x: pd.to_datetime(x, format='%Y', errors='coerce'))
+            lambda x: pd.to_datetime(x, format="%Y", errors="coerce")
+        )
         df[["min_date", "max_date"]] = df[["min_date", "max_date"]].astype(
-           'datetime64[ns]')
+            "datetime64[ns]"
+        )
 
     return df
