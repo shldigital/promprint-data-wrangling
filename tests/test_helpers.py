@@ -98,9 +98,10 @@ def test_remove_metadata_removes_volume_edition_metadata():
     input_strings: List[str] = [
         "just my luck n 23", "just my luck ed 34", "just my luck vol 93",
         "just my luck vols 190-321", "just my luck volume 38",
-        "just my luck volumes 23 - 34"
+        "just my luck volumes 23 - 34",
+        "just my luck pt 9"
     ]
-    expected_strings: List[str] = ["just my luck"] * 6
+    expected_strings: List[str] = ["just my luck"] * 7
     output_strings: List[str] = map(remove_metadata, input_strings)
     assert list(output_strings) == expected_strings
 
