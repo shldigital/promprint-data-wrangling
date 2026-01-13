@@ -46,7 +46,11 @@ def clean_titles(df: pd.DataFrame, file_path: Path, debug: bool) -> pd.DataFrame
     :return pd.DataFrame: The columnar dataframe
     """
     clean_titles = (
-        df["title"].map(remove_metadata).map(clean_text).rename("clean_title")
+        df["title"]
+        .astype(str)
+        .map(remove_metadata)
+        .map(clean_text)
+        .rename("clean_title")
     )
 
     df = pd.concat([clean_titles, df.loc[:, :]], axis=1)
