@@ -26,6 +26,8 @@ def main(
     :param output_folder: Path to folder for saving output
     :type input_folder: str
     :config_file: Path to file containing config dictionary for filtering date ranges
+    :param debug: Turn on debug to save intermediate stages of data to file
+    :type debug: bool
     :type config_file: str
     :return: None
     """
