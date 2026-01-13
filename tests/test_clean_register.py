@@ -34,6 +34,14 @@ def test_titles_cleaned(tmp_path):
     assert df["clean_title"].iloc[0] == expected_title
 
 
+def test_publishers_cleaned(tmp_path):
+    main(input_file, tmp_path, False)
+    df: pd.DataFrame = pd.read_csv(tmp_path / output_filename)
+    expected_string = "houlston and wright"
+    print(df.columns)
+    assert df["clean_publisher"].iloc[0] == expected_string
+
+
 def test_new_index_added_to_formatted_register_set(tmp_path):
     df = pd.read_csv(input_file)
     original_index = df.index

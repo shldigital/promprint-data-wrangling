@@ -1,8 +1,9 @@
 """Clean register tables, removing nonalphanumeric characters and metadata."""
+
+import lib.helpers as helpers
 import logging
 import pandas as pd
 
-from lib.helpers import clean_titles
 from pathlib import Path
 from typing import Any
 
@@ -15,7 +16,7 @@ rename_dict = {
     "Publisher": "publisher",
 }
 
-additional_columns = ["creator", "clean_title"]
+additional_columns = ["creator", "clean_title", "clean_publisher"]
 
 logger = logging.getLogger("")
 
@@ -44,7 +45,8 @@ def main(input_file: str, output_folder: str, debug: bool, **kwargs: Any) -> Non
 
     df = df.rename(columns=rename_dict)
 
-    df = clean_titles(df, file_path, debug)
+    df = helpers.clean_titles(df, file_path, debug)
+    df["clean_publisher"] = df["publisher"].astype(str).map(helpers.clean_text)
 
     required_columns: list[str] = list(rename_dict.values()) + additional_columns
     df = df.reindex(columns=required_columns)

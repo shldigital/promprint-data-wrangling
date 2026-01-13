@@ -63,6 +63,13 @@ def test_clean_text_replaces_ampersand_character():
     assert output_string == expected_string
 
 
+def test_clean_text_handles_blank_entry():
+    input_string: str = ""
+    expected_string: str = ""
+    output_string: str = clean_text(input_string)
+    assert output_string == expected_string
+
+
 def test_remove_metadata_lower_cases():
     input_string: str = "FRIENDS TO LOVERS"
     expected_string: str = "friends to lovers"
