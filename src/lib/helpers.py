@@ -27,7 +27,7 @@ def remove_metadata(data_string: str) -> str:
     return single_spaced.strip()
 
 
-def clean_data_string(data_string: str) -> str:
+def clean_text(data_string: str) -> str:
     """Remove/replace ampersands, apostrophes and multi-spaces."""
     no_ampersand = re.sub(r"(&amp;|&)", "and", data_string)
     no_apostrophe = re.sub(r"['`]", "", no_ampersand)
@@ -46,7 +46,7 @@ def clean_titles(df: pd.DataFrame, file_path: Path, debug: bool) -> pd.DataFrame
     :return pd.DataFrame: The columnar dataframe
     """
     clean_titles = (
-        df["title"].map(remove_metadata).map(clean_data_string).rename("clean_title")
+        df["title"].map(remove_metadata).map(clean_text).rename("clean_title")
     )
 
     df = pd.concat([clean_titles, df.loc[:, :]], axis=1)

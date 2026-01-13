@@ -66,9 +66,9 @@ def main(
     ).pipe(nls.clean_nls_dates, file_path=file_path, debug=debug)
 
     compiled_df["clean_publisher"] = compiled_df["publisher"].map(
-        helpers.clean_data_string
+        helpers.clean_text
     )
-    compiled_df["clean_creator"] = compiled_df["creator"].map(helpers.clean_data_string)
+    compiled_df["clean_creator"] = compiled_df["creator"].map(helpers.clean_text)
 
     print(f"Total No. of entries: {len(compiled_df)}")
 

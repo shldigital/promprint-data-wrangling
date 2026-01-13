@@ -1,65 +1,65 @@
 import pandas as pd
 import pytest
 
-from src.lib.helpers import (clean_data_string, remove_metadata,
+from src.lib.helpers import (clean_text, remove_metadata,
                              labelled_file, format_library_set)
 from pathlib import Path
 from typing import List
 
 
-def test_clean_data_string_lower_cases():
+def test_clean_text_lower_cases():
     input_string: str = "FRIENDS TO LOVERS"
     expected_string: str = "friends to lovers"
-    output_string: str = clean_data_string(input_string)
+    output_string: str = clean_text(input_string)
     assert output_string == expected_string
 
 
-def test_clean_data_string_strips_outer_whitespace():
+def test_clean_text_strips_outer_whitespace():
     input_string: str = "\t\nkiller in shellview county \r"
     expected_string: str = "killer in shellview county"
-    output_string: str = clean_data_string(input_string)
+    output_string: str = clean_text(input_string)
     assert output_string == expected_string
 
 
-def test_clean_data_string_removes_apostrophes():
+def test_clean_text_removes_apostrophes():
     input_string: str = "the lightkeeper's curse"
     expected_string: str = "the lightkeepers curse"
-    output_string: str = clean_data_string(input_string)
+    output_string: str = clean_text(input_string)
     assert output_string == expected_string
 
 
-def test_clean_data_string_removes_backticks():
+def test_clean_text_removes_backticks():
     input_string: str = "the lightkeeper`s curse"
     expected_string: str = "the lightkeepers curse"
-    output_string: str = clean_data_string(input_string)
+    output_string: str = clean_text(input_string)
     assert output_string == expected_string
 
 
-def test_clean_data_string_replaces_seq_of_other_chars_with_single_space():
+def test_clean_text_replaces_seq_of_other_chars_with_single_space():
     input_string: str = "aÆ[date]/with/''\"\"£$%^*()-+_={}@~#!<>,?.death"
     expected_string: str = "a date with death"
-    output_string: str = clean_data_string(input_string)
+    output_string: str = clean_text(input_string)
     assert output_string == expected_string
 
 
-def test_clean_data_string_only_single_spaces():
+def test_clean_text_only_single_spaces():
     input_string: str = "hiding  in  alaska"
     expected_string: str = "hiding in alaska"
-    output_string: str = clean_data_string(input_string)
+    output_string: str = clean_text(input_string)
     assert output_string == expected_string
 
 
-def test_clean_data_string_replaces_ampersand_string():
+def test_clean_text_replaces_ampersand_string():
     input_string: str = "mills &amp; boon"
     expected_string: str = "mills and boon"
-    output_string: str = clean_data_string(input_string)
+    output_string: str = clean_text(input_string)
     assert output_string == expected_string
 
 
-def test_clean_data_string_replaces_ampersand_character():
+def test_clean_text_replaces_ampersand_character():
     input_string: str = "mills & boon"
     expected_string: str = "mills and boon"
-    output_string: str = clean_data_string(input_string)
+    output_string: str = clean_text(input_string)
     assert output_string == expected_string
 
 
