@@ -20,6 +20,6 @@ def main(collection_path: Path, output_folder: Path):
     """
     df = pd.read_csv(collection_path)
     if not all(name in df.columns for name in expected_columns):
-        raise KeyError("Input file does not have a publisher column")
+        raise KeyError(f"Input file does not have relevant columns: {expected_columns}")
     publishers_df = df.filter(["publisher", "clean_publisher"], axis=1)
     publishers_df.to_csv(output_folder / "publishers.csv")
