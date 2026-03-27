@@ -32,8 +32,8 @@ def main(
     :type config_file: str
     :return: None
     """
-    with open(config_file) as data:
-        config: dict = ast.literal_eval(data.read())
+
+    Path(output_folder).mkdir(parents=False, exist_ok=True)
     registers: dict[str, int] = nls_config["registers"]
     date_range: float = nls_config["date_range"]
 
@@ -62,13 +62,12 @@ def main(
         section_list.append(df)
     compiled_df: pd.DataFrame = pd.concat(section_list)
 
+    compiled_df = compiled_df.drop_duplicates(subset=["title", "publisher", "creator"])
     compiled_df = compiled_df.pipe(
         helpers.clean_titles, file_path=file_path, debug=debug
     ).pipe(nls.clean_nls_dates, file_path=file_path, debug=debug)
 
-    compiled_df["clean_publisher"] = compiled_df["publisher"].map(
-        helpers.clean_text
-    )
+    compiled_df["clean_publisher"] = compiled_df["publisher"].map(helpers.clean_text)
     compiled_df["clean_creator"] = compiled_df["creator"].map(helpers.clean_text)
 
     print(f"Total No. of entries: {len(compiled_df)}")
