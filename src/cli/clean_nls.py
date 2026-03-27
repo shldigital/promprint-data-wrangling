@@ -7,6 +7,7 @@ import lib.nls as nls
 import logging
 import pandas as pd
 
+from config.nls import nls_config
 from functools import partial
 from pathlib import Path
 from typing import Any
@@ -33,8 +34,8 @@ def main(
     """
     with open(config_file) as data:
         config: dict = ast.literal_eval(data.read())
-    registers: dict[str, int] = config["NLS"]["registers"]
-    date_range: float = config["NLS"]["date_range"]
+    registers: dict[str, int] = nls_config["registers"]
+    date_range: float = nls_config["date_range"]
 
     file_paths: list[Path] = list(map(Path, glob.glob(input_folder + "*.txt")))
     if len(file_paths) < 1:
