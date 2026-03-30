@@ -62,13 +62,15 @@ def main(
         section_list.append(df)
     compiled_df: pd.DataFrame = pd.concat(section_list)
 
-    compiled_df = compiled_df.drop_duplicates(subset=["title", "publisher", "creator"])
     compiled_df = compiled_df.pipe(
         helpers.clean_titles, file_path=file_path, debug=debug
     ).pipe(nls.clean_nls_dates, file_path=file_path, debug=debug)
 
     compiled_df["clean_publisher"] = compiled_df["publisher"].map(helpers.clean_text)
     compiled_df["clean_creator"] = compiled_df["creator"].map(helpers.clean_text)
+    compiled_df = compiled_df.drop_duplicates(
+        subset=["clean_title", "clean_publisher", "clean_creator"]
+    )
 
     print(f"Total No. of entries: {len(compiled_df)}")
 
