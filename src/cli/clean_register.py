@@ -21,7 +21,9 @@ additional_columns = ["creator", "clean_title", "clean_publisher"]
 logger = logging.getLogger("")
 
 
-def main(input_file: str, output_folder: str, debug: bool, **kwargs: Any) -> None:
+def main(
+    input_file: str, output_folder: str, debug: bool = False, **kwargs: Any
+) -> None:
     """
     Clean register tables, removing nonalphanumeric characters and metadata.
 

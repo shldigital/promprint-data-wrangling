@@ -16,7 +16,11 @@ logger = logging.getLogger("")
 
 
 def main(
-    input_folder: str, output_folder: str, config_file: str, debug: bool, **kwargs: Any
+    input_folder: str,
+    output_folder: str,
+    config_file: str,
+    debug: bool = False,
+    **kwargs: Any,
 ) -> None:
     """
     Clean and filter data from National Library of Scotland collection.
