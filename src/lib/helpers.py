@@ -44,8 +44,9 @@ def remove_metadata(data_string: str) -> str:
 
 
 def clean_text(data_string: str) -> str:
-    """Remove/replace ampersands, apostrophes and multi-spaces."""
-    no_ampersand = re.sub(r"(&amp;|&)", "and", data_string)
+    """Remove/replace etc, ampersands, apostrophes and multi-spaces."""
+    replace_etc = re.sub(r"(&c|etcetera|et cetera)", "etc", data_string)
+    no_ampersand = re.sub(r"(&amp;|&)", "and", replace_etc)
     no_apostrophe = re.sub(r"['`]", "", no_ampersand)
     alphanum = re.sub(r"[^a-zA-Z0-9]", " ", no_apostrophe)
     single_spaced = re.sub(r"\s{2,}", " ", alphanum)

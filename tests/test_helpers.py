@@ -74,6 +74,17 @@ def test_clean_text_handles_blank_entry():
     assert output_string == expected_string
 
 
+def test_clean_text_handles_etcetera():
+    input_strings: List[str] = [
+        "&c",
+        "et cetera",
+        "etcetera",
+    ]
+    expected_strings: List[str] = ["etc"] * 3
+    output_strings: List[str] = map(clean_text, input_strings)
+    assert list(output_strings) == expected_strings
+
+
 def test_remove_metadata_lower_cases():
     input_string: str = "FRIENDS TO LOVERS"
     expected_string: str = "friends to lovers"
