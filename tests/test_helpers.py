@@ -1,8 +1,12 @@
 import pandas as pd
 import pytest
 
-from src.lib.helpers import (clean_text, remove_metadata,
-                             labelled_file, format_library_set)
+from src.lib.helpers import (
+    clean_text,
+    remove_metadata,
+    labelled_file,
+    format_library_set,
+)
 from pathlib import Path
 from typing import List
 
@@ -93,8 +97,10 @@ def test_remove_metadata_strips_outer_whitespace():
 
 def test_remove_metadata_removes_square_bracket_metadata():
     input_strings: List[str] = [
-        "second chance [microform]", "second chance [illustrated]",
-        "second chance [a novel]", "second chance [plates]"
+        "second chance [microform]",
+        "second chance [illustrated]",
+        "second chance [a novel]",
+        "second chance [plates]",
     ]
     expected_strings: List[str] = ["second chance"] * 4
     output_strings: List[str] = map(remove_metadata, input_strings)
@@ -103,10 +109,13 @@ def test_remove_metadata_removes_square_bracket_metadata():
 
 def test_remove_metadata_removes_volume_edition_metadata():
     input_strings: List[str] = [
-        "just my luck n 23", "just my luck ed 34", "just my luck vol 93",
-        "just my luck vols 190-321", "just my luck volume 38",
+        "just my luck n 23",
+        "just my luck ed 34",
+        "just my luck vol 93",
+        "just my luck vols 190-321",
+        "just my luck volume 38",
         "just my luck volumes 23 - 34",
-        "just my luck pt 9"
+        "just my luck pt 9",
     ]
     expected_strings: List[str] = ["just my luck"] * 7
     output_strings: List[str] = map(remove_metadata, input_strings)
@@ -120,8 +129,9 @@ def test_labelled_file_changes_ext():
     out_path: Path = Path(out_dir)
     expected_name: str = "./tests/test_register/test_register_labelled.tsv"
     expected_path: Path = Path(expected_name)
-    assert labelled_file(out_path, input_path, "labelled",
-                         suffix=".tsv") == expected_path
+    assert (
+        labelled_file(out_path, input_path, "labelled", suffix=".tsv") == expected_path
+    )
 
 
 def test_labelled_file_doesnt_change_ext():
@@ -136,20 +146,65 @@ def test_labelled_file_doesnt_change_ext():
 
 def test_new_index_added_to_formatted_library_set():
     source_library = "NLS"
-    df = pd.read_csv("./tests/test_files/nls_sample_filtered_1863b.tsv",
-                     sep='\t',
-                     index_col=0)
+    df = pd.read_csv(
+        "./tests/test_files/nls_sample_filtered_1863b.tsv", sep="\t", index_col=0
+    )
     original_index = df.index
     new_df = format_library_set(df, None, source_library, "1863b")
-    updated = map(lambda x, y: x == f'{source_library}:{y}',
-                  new_df.index, original_index)
+    updated = map(
+        lambda x, y: x == f"{source_library}:{y}", new_df.index, original_index
+    )
     assert all(updated)
 
 
 def test_duplicate_indices_raises():
     source_library = "NLS"
-    df = pd.read_csv("./tests/test_files/nls_duplicate_indices.tsv",
-                     sep='\t',
-                     index_col=0)
+    df = pd.read_csv(
+        "./tests/test_files/nls_duplicate_indices.tsv", sep="\t", index_col=0
+    )
     with pytest.raises(IndexError):
         format_library_set(df, None, source_library, "1863b")
+
+
+test_edition_strings = [
+    ("Mechanic's Magazine Pt 13. Vol. 8. Pts 1 to 9", "mechanics magazine"),
+    ("Mechanic's Magazine pt 13. vol. 8. pts 1 to 9", "mechanics magazine"),
+    ("Mechanic's Magazine part 13. vol. 8. parts 1 to 9", "mechanics magazine"),
+    ("Mechanic's Magazine pt XIII. vol. VIII. pts I to IX", "mechanics magazine"),
+    ("English Womens Domestic Mag. no 19 to 25-", "english womens domestic mag"),
+    ("English Womens Domestic Mag. no XIX to XXV-", "english womens domestic mag"),
+    ("Beeton's Dictionary nos. 23-25. & 35 to 37.", "beetons dictionary"),
+    ("Beeton's Dictionary nos. XXII-XXV. & XXXV to XXXVII.", "beetons dictionary"),
+    ("Beeton's Dictionary nos. 23 & 35", "beetons dictionary"),
+    ("Beeton's Dictionary nos. 23 & 35 to 37.", "beetons dictionary"),
+    ("Beeton's Dictionary numbers. 23 & 35 to 37.", "beetons dictionary"),
+    ("Social Science Review no. 38 vol 2", "social science review"),
+    ("Social Science Review no. XXXVIII vol II", "social science review"),
+    ("Social Science Review number XXXVIII vol II", "social science review"),
+    ("Hair drepers Journal March. 1863.", "hair drepers journal"),
+    ("Hair drepers Journal March. MDCCCLXIII.", "hair drepers journal"),
+    ("Hair drepers Journal 4th edition", "hair drepers journal"),
+    ("Hair drepers Journal March edition", "hair drepers journal"),
+    ("Hair drepers Journal March ed.", "hair drepers journal"),
+    ("just my luck n 23", "just my luck"),
+    ("just my luck vols 190-321", "just my luck"),
+    ("just my luck volumes 23 - 34", "just my luck"),
+    ("just my luck editions 23 - 34", "just my luck"),
+    ("just my luck pt 9", "just my luck"),
+    ("just my luck ed. 9", "just my luck"),
+    ("just my luck edition 9", "just my luck"),
+    ("just my luck n XXIII", "just my luck"),
+    ("just my luck vols XCX-CCCXXI", "just my luck"),
+    ("just my luck no. 4", "just my luck"),
+    (
+        "a series of Essays 2 Vols No. 214.",
+        "a series of essays",
+    ),
+]
+
+
+@pytest.mark.parametrize("raw_string, cleaned_string", test_edition_strings)
+def test_remove_edition_data(raw_string, cleaned_string):
+    no_metadata = remove_metadata(raw_string)
+    result = clean_text(no_metadata)
+    assert result == cleaned_string

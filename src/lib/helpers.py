@@ -19,10 +19,26 @@ def remove_metadata(data_string: str) -> str:
     square_brackets_clean = re.sub(
         r"\[(?:microform|illustrated|a novel|plates)\]", "", data_string.lower()
     )
-    editions_clean = re.sub(
-        r"\b(?:n(?:os|)|ed|pt|vol(?:s|ume|umes|))\b", "", square_brackets_clean
+    multi_editions_clean = re.sub(
+        r"\b(n(umber|o)?|ed(t|ition)?|p(ar)?t|vol(ume)?)s?\.? (\d{1,4}|[ivxlc]{1,9})\.? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)?",
+        "",
+        square_brackets_clean,
     )
-    no_numbers = re.sub(r"\d{1,4}(?: *- *\d{1,4}|)", "", editions_clean)
+    no_ordinals = re.sub(
+        r"(\d{1,4}|fir|seco|thi|four|fif|six|seven|eigh|nine|ten|eleven|twelf|thir)(teen)?(st|nd|rd|th) ed(t|ition)?",
+        "",
+        multi_editions_clean,
+    )
+    no_year_dated_edition = re.sub(r"\d{1,4} ed(t|ition)?", "", no_ordinals)
+    no_month_dated_edition = re.sub(
+        r"(jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|jun(e)?|jul(y)?|aug(ust)?|sep(tember)?|oct(ober)?|nov(ember)?|dec(ember)?)\.? (\d{2,4}|[ivxlcdm]{1,12}|ed(t|ition)?)",
+        "",
+        no_year_dated_edition,
+    )
+    editions_cleanup = re.sub(
+        r"\b(?:n(?:os|)|ed|pt|vol(?:s|ume|umes|))\b", "", no_month_dated_edition
+    )
+    no_numbers = re.sub(r"\d{1,4}(?: *- *\d{1,4}|)", "", editions_cleanup)
     single_spaced = re.sub(r"\s{2,}", " ", no_numbers)
     return single_spaced.strip()
 
