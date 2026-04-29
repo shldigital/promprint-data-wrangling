@@ -41,7 +41,7 @@ def test_clean_text_removes_backticks():
 
 def test_clean_text_replaces_seq_of_other_chars_with_single_space():
     input_string: str = "aÆ[date]/with/''\"\"£$%^*()-+_={}@~#!<>,?.death"
-    expected_string: str = "a date with death"
+    expected_string: str = "aæ date with death"
     output_string: str = clean_text(input_string)
     assert output_string == expected_string
 
@@ -63,6 +63,13 @@ def test_clean_text_replaces_ampersand_string():
 def test_clean_text_replaces_ampersand_character():
     input_string: str = "mills & boon"
     expected_string: str = "mills and boon"
+    output_string: str = clean_text(input_string)
+    assert output_string == expected_string
+
+
+def test_clean_text_handles_numbers():
+    input_string: str = "mills & boon 8"
+    expected_string: str = "mills and boon 8"
     output_string: str = clean_text(input_string)
     assert output_string == expected_string
 

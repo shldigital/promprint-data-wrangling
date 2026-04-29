@@ -48,7 +48,7 @@ def clean_text(data_string: str) -> str:
     replace_etc = re.sub(r"(&c|etcetera|et cetera)", "etc", data_string)
     no_ampersand = re.sub(r"(&amp;|&)", "and", replace_etc)
     no_apostrophe = re.sub(r"['`]", "", no_ampersand)
-    alphanum = re.sub(r"[^a-zA-Z0-9]", " ", no_apostrophe)
+    alphanum = re.sub(r"[^\p{L}0-9]", " ", no_apostrophe)
     single_spaced = re.sub(r"\s{2,}", " ", alphanum)
     return single_spaced.strip().lower()
 
