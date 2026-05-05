@@ -38,7 +38,6 @@ def test_publishers_cleaned(tmp_path):
     main(input_file, tmp_path, False)
     df: pd.DataFrame = pd.read_csv(tmp_path / output_filename)
     expected_string = "houlston and wright"
-    print(df.columns)
     assert df["clean_publisher"].iloc[0] == expected_string
 
 
