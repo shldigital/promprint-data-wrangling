@@ -2,6 +2,7 @@ import pandas as pd
 import pathlib
 import pytest
 
+from pandas.testing import assert_series_equal
 from src.cli.clean_register import main, rename_dict, additional_columns
 from typing import List
 
@@ -39,6 +40,13 @@ def test_publishers_cleaned(tmp_path):
     df: pd.DataFrame = pd.read_csv(tmp_path / output_filename)
     expected_string = "houlston and wright"
     assert df["clean_publisher"].iloc[0] == expected_string
+
+
+def test_do_entries_filled(tmp_path):
+    main(input_file, tmp_path)
+    df: pd.DataFrame = pd.read_csv(tmp_path / output_filename)
+    expected_data = pd.Series(["houlston and wright"] * 7, name="clean_publisher")
+    assert_series_equal(df["clean_publisher"], expected_data)
 
 
 def test_new_index_added_to_formatted_register_set(tmp_path):

@@ -50,6 +50,10 @@ def main(
     df = helpers.clean_titles(df, file_path, debug)
     df["clean_publisher"] = df["publisher"].astype(str).map(helpers.clean_text)
 
+    do_entries = df.loc[df["clean_publisher"].astype(str) == "do"]
+    for i in do_entries.index:
+        df.at[i, "clean_publisher"] = df.iloc[i-1]["clean_publisher"]
+
     required_columns: list[str] = list(rename_dict.values()) + additional_columns
     df = df.reindex(columns=required_columns)
     df.index = df["register"] + ":" + df.index.astype(str)
