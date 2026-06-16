@@ -21,7 +21,7 @@ def remove_metadata(data_string: str) -> str:
         r"\[(?:microform|illustrated|a novel|plates)\]", "", data_string
     )
     multi_editions_clean = re.sub(
-        r"\b(n(umber|o)?|ed(t|ition)?|p(ar)?t|vol(ume)?)s?\.? (\d{1,4}|[ivxlc]{1,9})\.? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)?",
+        r"\b(n(umber|o)?|ed(t|ition)?|p(ar)?t|vol(ume)?)s?(\.|,)? ?(\d{1,4}|[ivxlc]{1,9})\.? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)?",
         "",
         square_brackets_clean,
     )
