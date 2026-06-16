@@ -16,8 +16,9 @@ def labelled_file(
 
 def remove_metadata(data_string: str) -> str:
     """Remove strings and numbers not directly related to the data of the entry."""
+    data_string = data_string.lower()
     square_brackets_clean = re.sub(
-        r"\[(?:microform|illustrated|a novel|plates)\]", "", data_string.lower()
+        r"\[(?:microform|illustrated|a novel|plates)\]", "", data_string
     )
     multi_editions_clean = re.sub(
         r"\b(n(umber|o)?|ed(t|ition)?|p(ar)?t|vol(ume)?)s?\.? (\d{1,4}|[ivxlc]{1,9})\.? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)? ?((\-|to|&) ?(\d{1,4}|[ivxlc]{1,9})\.?)?",
