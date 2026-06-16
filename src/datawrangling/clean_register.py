@@ -61,4 +61,5 @@ def main(
 
     new_name: Path = file_path.stem + "_export.csv"
     output_path = Path(output_folder)
+    output_path.mkdir(parents=False, exist_ok=True)
     df.to_csv(output_path / new_name)
