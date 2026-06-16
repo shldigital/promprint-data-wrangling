@@ -7,7 +7,7 @@ import lib.nls as nls
 import logging
 import pandas as pd
 
-from config.nls import nls_config
+from src.config.nls import nls_config
 from functools import partial
 from pathlib import Path
 from typing import Any
