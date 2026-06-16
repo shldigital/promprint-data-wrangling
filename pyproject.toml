@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [project.scripts]
-pdw = "datawrangling.main:main"
+pdw = "cli.main:main"
 
 [build-system]
 requires = ["hatchling", "uv-dynamic-versioning"]

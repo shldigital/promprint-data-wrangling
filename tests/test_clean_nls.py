@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.cli.clean_nls import main
+from src.datawrangling.clean_nls import main
 from src.config.nls import nls_config
 
 input_folder = "./tests/test_files/test_nls/"

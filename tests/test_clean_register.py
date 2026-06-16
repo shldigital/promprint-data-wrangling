@@ -3,7 +3,7 @@ import pathlib
 import pytest
 
 from pandas.testing import assert_series_equal
-from src.cli.clean_register import main, rename_dict, additional_columns
+from src.datawrangling.clean_register import main, rename_dict, additional_columns
 from typing import List
 
 input_file = "./tests/test_files/test_register.csv"

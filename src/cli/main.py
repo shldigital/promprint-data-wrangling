@@ -5,8 +5,8 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "lib"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "cli"))
-from cli import clean_nls
-from cli import clean_register
+from datawrangling import clean_nls
+from datawrangling import clean_register
 
 logger = logging.getLogger("")
 logging.basicConfig(
