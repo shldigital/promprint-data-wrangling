@@ -33,24 +33,12 @@ Since there are multiple files in this catalog, we run the script on the folder 
 
 Usage:
 ```
-uv run src/main.py nls /folder/of/nls/data/ /output/folder/ ./config.py
+uv run src/main.py nls /folder/of/nls/data/ /output/folder/
 ```
 
 **Note that to date, the file labelled number 45 is in a different format to the rest of the dataset, and is not yet handled by these scripts. This file must therefore be removed from the folder in order to succesfully process the rest.**
 
-The output goes into a separate folder of the user's choice. The user also passes in a config file, here named `config.py`, but which can take any name. This file contains a python dictionary in the following format:
-
-```
-{
-    "NLS": {
-        "registers": {
-            "1863b": 1863,
-            "undated": None
-        },
-        "date_range": 1.
-    }
-}
-```
+The output goes into a separate folder of the user's choice.
 
 Here, the `registers` dictionary holds a list of register names (inside quotes) and the year of that register. The year is used, along with the `date_range` value, to filter out entries in the NLS catalog. In this example we will output a file containing only NLS catalog entries for the years 1862, 1863 and 1864 (that is, 1863 +/- 1 year). If we wanted to include 1861 and 1865, then we would change `date_range` to `2`. The name of the output file will include the register name defined in the dictionary e.g. `nls_catalog_1863b_export.tsv`. Additionaly the `"undated": None` pair will cause the script to output a separate file with only the NLS catalog entries that have either no date or a date that could not be parsed - the name of this output file will include `undated` e.g. `nls_catalog_undated_export.tsv`.
 
