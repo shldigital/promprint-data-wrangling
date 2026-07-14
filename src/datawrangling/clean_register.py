@@ -16,7 +16,7 @@ rename_dict = {
     "Publisher": "publisher",
 }
 
-additional_columns = ["creator", "clean_title", "clean_publisher"]
+additional_columns = ["clean_creator", "clean_title", "clean_publisher"]
 
 logger = logging.getLogger("")
 
