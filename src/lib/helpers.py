@@ -26,13 +26,13 @@ def remove_metadata(data_string: str) -> str:
         square_brackets_clean,
     )
     no_ordinals = re.sub(
-        r"(\d{1,4}|fir|seco|thi|four|fif|six|seven|eigh|nine|ten|eleven|twelf|thir)(teen)?(st|nd|rd|th) ed(t|ition)?",
+        r"(\d{1,4}|fir|seco|thi|four|fif|six|seven|eigh|nine|ten|eleven|twelf|thir)(teen)?(st|nd|rd|th) (ed(t|ition)?|tion)",
         "",
         multi_editions_clean,
     )
     no_year_dated_edition = re.sub(r"\d{1,4} ed(t|ition)?", "", no_ordinals)
     no_month_dated_edition = re.sub(
-        r"(jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|jun(e)?|jul(y)?|aug(ust)?|sep(tember)?|oct(ober)?|nov(ember)?|dec(ember)?)\.? (\d{2,4}|[ivxlcdm]{1,12}|ed(t|ition)?)",
+        r"(jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|jun(e)?|jul(y)?|aug(ust)?|sep(tember)?|oct(ober)?|nov(ember)?|dec(ember)?)\.? (\d{2,4}|[ivxlcdm]{1,12}|(ed(t|ition)?|tion))",
         "",
         no_year_dated_edition,
     )
