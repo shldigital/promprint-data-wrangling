@@ -18,3 +18,8 @@ wheels/
 # Includes
 !tests/**/*.csv
 !tests/**/*.tsv
+
+# Working notebooks
+*.ipynb_checkpoints/
+clean_register_working.ipynb
+clean_nls_working.ipynb
