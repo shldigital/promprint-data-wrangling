@@ -23,8 +23,8 @@ def main(
     """
     Clean and filter data from National Library of Scotland collection.
 
-    :param input_folder: Path to folder containing .tsv files that make up the
-    NLS collection.
+    :param input_folder: Path to folder containing tab separated .txt
+      files that make up the NLS collection.
     :type input_folder: str
     :param output_folder: Path to folder for saving output
     :type input_folder: str
@@ -32,7 +32,6 @@ def main(
     :type debug: bool
     :return: None
     """
-
     Path(output_folder).mkdir(parents=False, exist_ok=True)
     registers: dict[str, int] = nls_config["registers"]
     date_range: float = nls_config["date_range"]
