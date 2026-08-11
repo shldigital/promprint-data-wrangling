@@ -1,6 +1,5 @@
 """Clean and filter data from National Library of Scotland collection."""
 
-import ast
 import glob
 import lib.helpers as helpers
 import lib.nls as nls
