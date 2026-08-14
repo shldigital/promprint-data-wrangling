@@ -52,13 +52,15 @@ def main(
             engine="python",
             on_bad_lines=partial(lambda line: line[:15]),
         )
-        df = df.pipe(
-            nls.columnise_nls_data,  # type: ignore[call-overload]
-            file_path=file_path,
-            debug=debug,
-        ).pipe(nls.add_file_data_to_index, file_path=file_path)
-
-        section_list.append(df)
+        try:
+            df = df.pipe(
+                nls.columnise_nls_data,  # type: ignore[call-overload]
+                file_path=file_path,
+                debug=debug,
+            ).pipe(nls.add_file_data_to_index, file_path=file_path)
+            section_list.append(df)
+        except AttributeError:
+            print(f"Badly formed file at: {file_path}")
     compiled_df: pd.DataFrame = pd.concat(section_list)
 
     compiled_df = compiled_df.pipe(

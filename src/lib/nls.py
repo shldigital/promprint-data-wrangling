@@ -33,7 +33,11 @@ def columnise_nls_data(df: pd.DataFrame, file_path: Path, debug: bool) -> pd.Dat
     :return pd.DataFrame: The columnar dataframe
     """
     # Strip out the data key, but leave other colons found in value
-    df = df.map(lambda x: ":".join(x.split(":")[1:]))
+    try:
+        df = df.map(lambda x: ":".join(x.split(":")[1:]))
+    except AttributeError as e:
+        print(e)
+        raise
     labels = [
         "title",
         "creator",
