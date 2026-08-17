@@ -36,6 +36,13 @@ def main(
     :type debug: bool
     :return: None
     """
+    run_metadata = {
+        "input file": input_file,
+        "output_folder": output_folder,
+    }
+
+    helpers.save_run_config(output_folder, run_metadata)
+
     file_path = Path(input_file)
     df = pd.read_csv(file_path)
 

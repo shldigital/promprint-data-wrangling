@@ -9,6 +9,7 @@ import pandas as pd
 from src.config.nls import nls_config
 from functools import partial
 from pathlib import Path
+from pprint import pformat
 from typing import Any
 
 logger = logging.getLogger("")
@@ -32,6 +33,14 @@ def main(
     :type debug: bool
     :return: None
     """
+    run_metadata = {
+        "input folder": input_folder,
+        "output_folder": output_folder,
+        "nls date filters": pformat(nls_config),
+    }
+
+    helpers.save_run_config(output_folder, run_metadata)
+
     Path(output_folder).mkdir(parents=False, exist_ok=True)
     registers: dict[str, int] = nls_config["registers"]
     date_range: float = nls_config["date_range"]
