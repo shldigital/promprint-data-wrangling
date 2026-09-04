@@ -8,14 +8,14 @@ from os.path import dirname
 from pathlib import Path
 
 
-def save_run_config(save_folder: Path, extras: dict = None):
+def save_run_config(save_folder: str, extras: dict = None):
     """Save run configuration and additional metadata to file."""
     now = datetime.datetime.now().strftime("%Y-%m-%d-%Hh%Mm%Ss")
+    Path(save_folder).mkdir(parents=False, exist_ok=True)
     run_config_path: Path = Path(save_folder) / f"{now}_run_config.txt"
     with open(run_config_path, "x") as f:
         repo_path = dirname(dirname(os.path.abspath(dirname(__file__))))
         commit = Repo(repo_path).heads.main.commit
-        f.write(f"script: {__file__}\n")
         f.write(f"repo location: {repo_path}\n")
         f.write(f"repo commit: {commit}\n")
         f.write(f"run start: {now}\n")

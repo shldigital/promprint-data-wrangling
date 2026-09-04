@@ -37,10 +37,13 @@ def main(
     :return: None
     """
     run_metadata = {
+        "script": {__file__},
         "input file": input_file,
         "output_folder": output_folder,
     }
 
+    output_path = Path(output_folder)
+    output_path.mkdir(parents=False, exist_ok=True)
     helpers.save_run_config(output_folder, run_metadata)
 
     file_path = Path(input_file)
@@ -67,6 +70,4 @@ def main(
     df.index.name = "id"
 
     new_name: Path = file_path.stem + "_export.csv"
-    output_path = Path(output_folder)
-    output_path.mkdir(parents=False, exist_ok=True)
     df.to_csv(output_path / new_name)
