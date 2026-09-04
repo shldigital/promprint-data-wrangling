@@ -36,11 +36,11 @@ def main(
     :type debug: bool
     :return: None
     """
+    arguments = locals()
     run_metadata = {
         "script": {__file__},
-        "input file": input_file,
-        "output_folder": output_folder,
     }
+    run_metadata.update(arguments)
 
     output_path = Path(output_folder)
     output_path.mkdir(parents=False, exist_ok=True)

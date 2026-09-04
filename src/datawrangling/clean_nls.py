@@ -33,12 +33,12 @@ def main(
     :type debug: bool
     :return: None
     """
+    arguments = locals()
     run_metadata = {
-        "script": {__file__},
-        "input folder": input_folder,
-        "output_folder": output_folder,
+        "script": __file__,
         "nls date filters": pformat(nls_config),
     }
+    run_metadata.update(arguments)
 
     Path(output_folder).mkdir(parents=False, exist_ok=True)
     helpers.save_run_config(output_folder, run_metadata)
